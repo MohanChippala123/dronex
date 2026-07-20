@@ -59,12 +59,12 @@ function resetSettings() {
 // ---------------- helpers ----------------
 
 function aqiColor(aqi) {
-  if (aqi === null || aqi === undefined) return '#948da3';
-  if (aqi <= 50) return '#57d38c';
-  if (aqi <= 100) return '#b45cff';
-  if (aqi <= 150) return '#f6a94a';
-  if (aqi <= 200) return '#ff6b81';
-  if (aqi <= 300) return '#c24fd6';
+  if (aqi === null || aqi === undefined) return '#5c6370';
+  if (aqi <= 50) return '#3cd47a';
+  if (aqi <= 100) return '#f0a030';
+  if (aqi <= 150) return '#e84057';
+  if (aqi <= 200) return '#e84057';
+  if (aqi <= 300) return '#c21030';
   return '#8b1a1a';
 }
 
@@ -88,12 +88,12 @@ function toast(msg, type = 'info', timeout = 6000) {
   if (timeout) setTimeout(close, timeout);
 }
 function aqiCategoryInfo(aqi) {
-  if (aqi === null || aqi === undefined) return { label: 'Unknown', color: '#948da3' };
-  if (aqi <= 50) return { label: 'Good', color: '#57d38c' };
-  if (aqi <= 100) return { label: 'Moderate', color: '#b45cff' };
-  if (aqi <= 150) return { label: 'Unhealthy (Sensitive)', color: '#f6a94a' };
-  if (aqi <= 200) return { label: 'Unhealthy', color: '#ff6b81' };
-  if (aqi <= 300) return { label: 'Very Unhealthy', color: '#c24fd6' };
+  if (aqi === null || aqi === undefined) return { label: 'Unknown', color: '#5c6370' };
+  if (aqi <= 50) return { label: 'Good', color: '#3cd47a' };
+  if (aqi <= 100) return { label: 'Moderate', color: '#f0a030' };
+  if (aqi <= 150) return { label: 'Unhealthy (Sensitive)', color: '#e84057' };
+  if (aqi <= 200) return { label: 'Unhealthy', color: '#e84057' };
+  if (aqi <= 300) return { label: 'Very Unhealthy', color: '#c21030' };
   return { label: 'Hazardous', color: '#8b1a1a' };
 }
 
@@ -171,16 +171,28 @@ function renderList() {
     const title = entry.location_label || 'Air Quality Survey';
     const rt = entry.range_info ? entry.range_info.round_trip_miles + ' mi' : '--';
     const cat = aqiCategoryInfo(entry.aqi_before);
+    const aqiVal = entry.aqi_before ?? 0;
+    const circ = 100.53;
+    const offset = circ * (1 - Math.min(aqiVal / 300, 1));
     card.innerHTML = `
-      <div class="mc-thumb" style="background:linear-gradient(135deg, ${cat.color}55, ${cat.color}11)">
-        <span class="mc-thumb-aqi">${entry.aqi_before ?? '--'}</span>
+      <div class="mc-gauge">
+        <div class="mc-gauge-ring">
+          <svg viewBox="0 0 36 36">
+            <circle class="gauge-bg" cx="18" cy="18" r="16"/>
+            <circle class="gauge-fill" cx="18" cy="18" r="16" style="--circ:${circ};--offset:${offset};stroke:${cat.color}"/>
+          </svg>
+          <span class="mc-gauge-val">${aqiVal}</span>
+        </div>
+        <div class="mc-gauge-info">
+          <div class="mc-gauge-cat" style="color:${cat.color}">${cat.label}</div>
+          <div class="mc-loc" title="${locText}">${locText}</div>
+        </div>
       </div>
       <div class="mc-body">
         <div class="mc-top">
           <span class="mc-title">${title}</span>
           <span class="status-pill ${status.cls}"><span class="dot"></span>${status.label}</span>
         </div>
-        <div class="mc-loc" title="${locText}">${locText}</div>
         <div class="mc-meta">
           <span>#${entry.mission_id}</span>
           <span>${rt}</span>
