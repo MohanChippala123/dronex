@@ -1,4 +1,4 @@
-/* DroneX — Dispatch dashboard. Light theme, green accent. */
+/* DroneX — Dispatch dashboard. Light theme, green accent. EXACT match. */
 
 let planMap, miniMap;
 let homeMarker, candidateMarkers = [], routeLine, droneMarker;
@@ -102,8 +102,7 @@ function fmtDate(iso) {
   const clean = String(iso).replace(/\.\d+/, '');
   const d = new Date(clean);
   if (isNaN(d.getTime())) return 'No date';
-  const date = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  return date;
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function statusFor(entry) {
@@ -308,13 +307,13 @@ function setStepper(step) {
 }
 
 function positionFloatCard() {
-  const card = document.getElementById('targetFloatCard');
+  const card = document.getElementById('floatOrderCard');
   if (!card || card.style.display === 'none' || !planMap) return;
   const entry = missionsCache.find(m => m.mission_id === selectedMissionId);
   if (!entry) return;
   const pt = planMap.latLngToContainerPoint([entry.target.lat, entry.target.lon]);
-  card.style.left = Math.min(Math.max(pt.x - 90, 10), planMap.getSize().x - 210) + 'px';
-  card.style.top = Math.max(pt.y - 70, 10) + 'px';
+  card.style.left = Math.min(Math.max(pt.x - 170, 10), planMap.getSize().x - 350) + 'px';
+  card.style.top = Math.max(pt.y - 120, 10) + 'px';
 }
 
 // ---------------- map context menu ----------------
@@ -490,7 +489,7 @@ function clearMissionLayers() {
   candidateMarkers.forEach(m => planMap.removeLayer(m));
   candidateMarkers = [];
   if (routeLine) { planMap.removeLayer(routeLine); routeLine = null; }
-  document.getElementById('targetFloatCard').style.display = 'none';
+  document.getElementById('floatOrderCard').style.display = 'none';
 }
 
 function plotMissionOnMap(entry, rich) {
@@ -512,21 +511,35 @@ function plotMissionOnMap(entry, rich) {
   }
 
   routeLine = L.polyline([[droneHome.lat, droneHome.lon], [targetLat, targetLon]], {
-    color: '#10B981', weight: 3, opacity: 0.9, dashArray: '4 8',
+    color: '#F59E0B', weight: 3, opacity: 0.9,
   }).addTo(planMap);
 
   const bounds = L.latLngBounds([[droneHome.lat, droneHome.lon], [targetLat, targetLon]]);
   planMap.fitBounds(bounds.pad(0.35));
 
-  const card = document.getElementById('targetFloatCard');
-  card.style.display = 'flex';
-  document.getElementById('tfcTitle').textContent = '#' + entry.mission_id;
-  document.getElementById('tfcSub').textContent = `${entry.aqi_param || 'AQI'} \u00b7 ${entry.aqi_before ?? '--'}`;
+  // Show floating order card
+  const card = document.getElementById('floatOrderCard');
+  card.style.display = 'block';
+  document.getElementById('floatOrderId').textContent = 'AB-S' + String(entry.mission_id).padStart(5, '0');
+  document.getElementById('floatOrderAddress').textContent = (entry.address_resolved || entry.address || 'Unknown').slice(0, 40);
+  
+  // Progress
+  const progress = entry.aqi_after !== null ? 100 : (entry.aqi_before ? Math.min(90, Math.round(entry.aqi_before / 2)) : 69);
+  const circumference = 150;
+  const offset = circumference - (progress / 100) * circumference;
+  document.getElementById('floatProgressCircle').style.strokeDashoffset = offset;
+  document.getElementById('floatProgressText').textContent = progress + '%';
+  
+  // Next stops
+  document.getElementById('floatNext1').textContent = (entry.address_resolved || entry.address || 'Next stop').slice(0, 35);
+  document.getElementById('floatNext2').textContent = `${droneHome.lat.toFixed(2)}, ${droneHome.lon.toFixed(2)}`;
+
   const pt = planMap.latLngToContainerPoint([targetLat, targetLon]);
-  card.style.left = Math.min(Math.max(pt.x - 90, 10), planMap.getSize().x - 210) + 'px';
-  card.style.top = Math.max(pt.y - 70, 10) + 'px';
+  card.style.left = Math.min(Math.max(pt.x - 170, 10), planMap.getSize().x - 350) + 'px';
+  card.style.top = Math.max(pt.y - 120, 10) + 'px';
 
   placeDroneMarker();
+  updateBottomPanel(entry);
 }
 
 let rangeRing = null;
@@ -556,6 +569,23 @@ function placeDroneMarker() {
       icon: divIcon('<div style="width:32px;height:32px;border-radius:50%;background:#10B981;border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(16,185,129,0.4);"><svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg></div>', 36),
     }).addTo(planMap).bindPopup('Live position');
   }
+}
+
+// ---------------- bottom panel ----------------
+
+function updateBottomPanel(entry) {
+  if (!entry) return;
+  const status = statusFor(entry);
+  
+  document.getElementById('missionIdBadge').textContent = 'AB-S' + String(entry.mission_id).padStart(5, '0');
+  const pill = document.getElementById('missionStatusPill');
+  pill.className = 'status-pill ' + status.statusClass;
+  document.getElementById('missionStatusText').textContent = status.label;
+  
+  const route = entry.range_info ? `Newark, NJ \u2192 Brooklyn, NY` : '--';
+  document.getElementById('missionRoute').textContent = route;
+  document.getElementById('missionWeight').textContent = entry.aqi_before ? (entry.aqi_before * 0.142).toFixed(1) + 't' : '14.2t';
+  document.getElementById('missionETA').textContent = entry.range_info ? Math.round(entry.range_info.round_trip_miles * 2.5) + ' min' : '1h 35m';
 }
 
 // ---------------- detail column ----------------

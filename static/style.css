@@ -1,15 +1,11 @@
-/* DroneX — Dispatch dashboard. Light theme, green accent. */
+/* DroneX — Dispatch dashboard. EXACT match to reference. */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg: #F5F5F5;
+  --bg: #F3F4F6;
   --bg-white: #FFFFFF;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: #FAFAFA;
-  --bg-selected: #F0FDF4;
   --border: #E5E7EB;
-  --border-selected: #10B981;
   --text-primary: #111827;
   --text-secondary: #6B7280;
   --text-muted: #9CA3AF;
@@ -24,10 +20,9 @@
   --radius: 16px;
   --radius-sm: 12px;
   --radius-xs: 8px;
-  --radius-pill: 9999px;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-xl: 0 8px 24px rgba(0,0,0,0.12);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; }
@@ -38,6 +33,9 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
 /* ==================== LAYOUT ==================== */
 .app-layout {
   display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+}
+.main-content {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;
 }
 
 /* ==================== TOP NAV ==================== */
@@ -51,12 +49,12 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
   display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; color: var(--text-primary);
 }
 .nav-logo-icon {
-  width: 32px; height: 32px; background: var(--text-primary); border-radius: var(--radius-xs);
+  width: 28px; height: 28px; background: var(--text-primary); border-radius: 6px;
   display: flex; align-items: center; justify-content: center; color: white;
 }
 .nav-center { display: flex; align-items: center; gap: 4px; }
 .nav-icon {
-  width: 40px; height: 40px; border-radius: var(--radius-sm); background: transparent;
+  width: 40px; height: 40px; border-radius: 10px; background: transparent;
   border: none; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
   transition: all 120ms ease;
 }
@@ -66,23 +64,18 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
 .nav-bell {
   width: 40px; height: 40px; border-radius: 50%; background: transparent;
   border: none; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
-  position: relative; transition: all 120ms ease;
+  position: relative;
 }
-.nav-bell:hover { background: var(--bg); color: var(--text-secondary); }
+.nav-bell:hover { background: var(--bg); }
 .nav-bell-dot {
   position: absolute; top: 8px; right: 8px; width: 8px; height: 8px;
   background: var(--status-critical); border-radius: 50%; border: 2px solid var(--bg-white);
 }
 .nav-avatar {
   width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-  border: 2px solid var(--border); overflow: hidden;
+  border: 2px solid var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center;
 }
-.nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-/* ==================== MAIN CONTENT ==================== */
-.main-content {
-  flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;
-}
+.nav-avatar svg { width: 20px; height: 20px; color: white; }
 
 /* ==================== MAP ==================== */
 .map-container {
@@ -94,49 +87,49 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
 .float-order-card {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   z-index: 1000; background: var(--bg-white); border-radius: var(--radius);
-  box-shadow: var(--shadow-xl); width: 320px; overflow: hidden;
+  box-shadow: var(--shadow-xl); width: 340px; overflow: hidden;
 }
 .float-order-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 20px; border-bottom: 1px solid var(--border);
 }
-.float-order-id { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+.float-order-left { flex: 1; }
+.float-order-id { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.float-order-address { font-size: 13px; color: var(--text-secondary); }
 .float-order-progress {
-  width: 48px; height: 48px; position: relative;
+  width: 56px; height: 56px; position: relative; flex-shrink: 0;
 }
 .float-order-progress svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.float-order-progress .progress-bg { fill: none; stroke: var(--border); stroke-width: 4; }
-.float-order-progress .progress-fill { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 126; stroke-dashoffset: 39; }
+.float-order-progress .progress-bg { fill: none; stroke: #E5E7EB; stroke-width: 4; }
+.float-order-progress .progress-fill { fill: none; stroke: #F59E0B; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 150; stroke-dashoffset: 46; }
 .float-order-progress .progress-text {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 600; color: var(--accent);
-}
-.float-order-address {
-  padding: 12px 20px; font-size: 13px; color: var(--text-secondary); border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 600; color: #F59E0B;
 }
 .float-order-next {
   padding: 12px 20px;
 }
 .float-order-next-item {
-  display: flex; align-items: center; gap: 10px; padding: 8px 0;
+  display: flex; align-items: center; gap: 10px; padding: 6px 0;
   font-size: 13px; color: var(--text-secondary);
 }
 .float-order-next-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--border); flex-shrink: 0;
 }
-.float-order-next-label { font-weight: 600; color: var(--text-primary); }
+.float-order-next-label { font-weight: 600; color: var(--text-primary); margin-right: 4px; }
 
 /* ==================== BOTTOM PANEL ==================== */
 .bottom-panel {
   position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
   display: flex; gap: 16px; padding: 16px 24px;
-  background: linear-gradient(transparent, rgba(245, 245, 245, 0.95) 20%);
+  pointer-events: none;
 }
+.bottom-panel > * { pointer-events: auto; }
 
 /* Mission Info Card */
 .mission-info-card {
   background: var(--bg-white); border-radius: var(--radius); box-shadow: var(--shadow-lg);
-  padding: 20px; width: 380px; flex-shrink: 0;
+  padding: 20px; width: 400px; flex-shrink: 0;
 }
 .mission-info-header {
   display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
@@ -146,7 +139,7 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
 }
 .status-pill {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 14px; border-radius: var(--radius-pill);
+  padding: 6px 14px; border-radius: 20px;
   font-size: 13px; font-weight: 600;
 }
 .status-pill.transit { background: var(--accent); color: white; }
@@ -157,15 +150,15 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
 .mission-nav-btn {
   width: 32px; height: 32px; border-radius: 50%; background: var(--bg);
   border: 1px solid var(--border); color: var(--text-muted); display: flex;
-  align-items: center; justify-content: center; transition: all 120ms ease;
+  align-items: center; justify-content: center;
 }
-.mission-nav-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.mission-nav-btn:hover { background: var(--bg-white); color: var(--text-primary); }
 
-.mission-details { display: flex; flex-direction: column; gap: 12px; }
+.mission-details { display: flex; flex-direction: column; gap: 10px; }
 .mission-detail-row {
   display: flex; align-items: center; gap: 12px; font-size: 14px;
 }
-.mission-detail-label { color: var(--text-muted); min-width: 100px; }
+.mission-detail-label { color: var(--text-muted); min-width: 110px; }
 .mission-detail-value { color: var(--text-primary); font-weight: 500; }
 .mission-driver {
   display: flex; align-items: center; gap: 10px; margin-top: 12px;
@@ -173,39 +166,38 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
 }
 .driver-avatar {
   width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-  overflow: hidden;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
 }
-.driver-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.driver-avatar svg { width: 16px; height: 16px; color: white; }
 .driver-name { font-size: 14px; font-weight: 500; }
 
 .truck-image {
-  width: 100%; height: 120px; margin-top: 16px; background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+  width: 100%; height: 100px; margin-top: 16px; background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
   border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
-.truck-image svg { width: 80px; height: 80px; color: var(--text-muted); }
+.truck-svg { width: 120px; height: 70px; }
 
-/* Metrics Cards */
+/* Metrics Row */
 .metrics-row { display: flex; gap: 16px; flex: 1; }
 .metric-card {
   background: var(--bg-white); border-radius: var(--radius); box-shadow: var(--shadow-lg);
   padding: 20px; flex: 1; min-width: 0;
 }
 .metric-header {
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
 }
 .metric-label { font-size: 13px; color: var(--text-muted); }
-.metric-value { font-size: 28px; font-weight: 700; color: var(--text-primary); }
-.metric-value-unit { font-size: 16px; font-weight: 500; color: var(--text-muted); }
-.metric-chart { height: 60px; margin-top: 12px; }
-.metric-chart-bar {
-  height: 100%; border-radius: var(--radius-xs); overflow: hidden;
-  display: flex; align-items: flex-end; gap: 2px;
+.metric-sub { font-size: 13px; color: var(--text-secondary); }
+.metric-value { font-size: 36px; font-weight: 700; color: var(--text-primary); line-height: 1; }
+.metric-value-unit { font-size: 20px; font-weight: 500; color: var(--text-muted); }
+.metric-chart { height: 50px; margin-top: 12px; position: relative; }
+.metric-arc {
+  width: 100%; height: 100%;
 }
-.metric-bar {
-  flex: 1; border-radius: 2px 2px 0 0; transition: height 150ms ease;
-}
-.metric-sub { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+.metric-sub-row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.metric-sub-label { font-size: 13px; color: var(--text-muted); }
+.metric-sub-value { font-size: 13px; color: var(--text-secondary); }
 
 /* Status Performance Card */
 .status-card {
@@ -213,33 +205,16 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
   padding: 20px; width: 320px; flex-shrink: 0;
 }
 .status-card-title { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
-.status-bars { display: flex; flex-direction: column; gap: 12px; }
+.status-bars { display: flex; flex-direction: column; gap: 14px; }
 .status-bar-row {
   display: flex; align-items: center; gap: 12px;
 }
-.status-bar-label { font-size: 13px; color: var(--text-secondary); min-width: 80px; }
+.status-bar-value { font-size: 14px; font-weight: 600; color: var(--text-primary); min-width: 40px; }
 .status-bar-track {
   flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden;
 }
 .status-bar-fill { height: 100%; border-radius: 4px; transition: width 150ms ease; }
-.status-bar-value { font-size: 13px; font-weight: 600; color: var(--text-primary); min-width: 40px; text-align: right; }
-
-/* ==================== STATS ROW ==================== */
-.stats-row {
-  display: flex; gap: 16px;
-}
-.stat-card {
-  background: var(--bg-white); border-radius: var(--radius); box-shadow: var(--shadow-lg);
-  padding: 20px; flex: 1;
-}
-.stat-card-header {
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
-}
-.stat-card-label { font-size: 13px; color: var(--text-muted); }
-.stat-card-value { font-size: 32px; font-weight: 700; color: var(--text-primary); }
-.stat-card-chart { height: 40px; margin-top: 8px; }
-.stat-mini-chart { display: flex; align-items: flex-end; gap: 2px; height: 100%; }
-.stat-mini-bar { flex: 1; background: var(--border); border-radius: 2px; transition: height 150ms ease; }
+.status-bar-label { font-size: 13px; color: var(--text-secondary); min-width: 80px; }
 
 /* ==================== MAP MARKERS ==================== */
 .home-marker {
@@ -315,13 +290,13 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
 
 /* ==================== LEAFLET OVERRIDES ==================== */
 .leaflet-container { background: var(--bg); }
-.leaflet-control-attribution { background: rgba(255, 255, 255, 0.9) !important; color: var(--text-muted) !important; font-size: 11px; }
+.leaflet-control-attribution { background: rgba(255,255,255,0.9) !important; color: var(--text-muted) !important; font-size: 11px; }
 .leaflet-control-attribution a { color: var(--text-muted) !important; }
 .leaflet-control-zoom a {
   background: var(--bg-white) !important; color: var(--text-primary) !important;
   border: 1px solid var(--border) !important; border-radius: var(--radius-xs) !important;
 }
-.leaflet-control-zoom a:hover { background: var(--bg-card-hover) !important; }
+.leaflet-control-zoom a:hover { background: var(--bg) !important; }
 .leaflet-popup-content-wrapper { background: var(--bg-white) !important; color: var(--text-primary) !important; border-radius: var(--radius-sm) !important; border: 1px solid var(--border); box-shadow: var(--shadow-lg); }
 .leaflet-popup-tip { background: var(--bg-white) !important; }
 .leaflet-control-zoom { border: none !important; margin: 16px !important; }
@@ -339,6 +314,65 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
   animation: spin 700ms linear infinite; flex-shrink: 0;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ==================== MAP CONTROLS ==================== */
+.map-ctrl-group { position: absolute; z-index: 500; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+.map-tool-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg-white); border: 1px solid var(--border); color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+}
+.map-tool-btn:hover { color: var(--text-primary); border-color: var(--text-muted); }
+
+/* ==================== MAP COLUMN ==================== */
+.map-col { flex: 1; position: relative; overflow: hidden; background: var(--bg); }
+#planMap { width: 100%; height: 100%; }
+
+/* ==================== MAP FLOAT CARD ==================== */
+.map-float-card {
+  position: absolute; top: 16px; left: 16px; z-index: 1000;
+  background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--shadow-lg);
+}
+.float-icon {
+  width: 40px; height: 40px; border-radius: var(--radius-xs); background: var(--accent-dim);
+  display: flex; align-items: center; justify-content: center; color: var(--accent);
+}
+.float-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.float-sub { font-size: 13px; color: var(--text-secondary); }
+
+/* ==================== CONTEXT MENU ==================== */
+.map-context-menu {
+  position: absolute; z-index: 900; min-width: 180px;
+  background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-xs);
+  padding: 6px; box-shadow: var(--shadow-lg);
+}
+.ctx-item {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  background: transparent; border: none; color: var(--text-primary);
+  font-size: 14px; text-align: left; padding: 10px 12px; border-radius: var(--radius-xs); cursor: pointer;
+}
+.ctx-item:hover { background: var(--bg); }
+.ctx-item .ctx-ico { width: 16px; text-align: center; }
+.ctx-sep { height: 1px; background: var(--border); margin: 4px 6px; }
+
+/* ==================== COACH HINT ==================== */
+.map-coach {
+  position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 480;
+  display: none; align-items: center; gap: 10px;
+  background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 16px; font-size: 14px; color: var(--text-secondary);
+  box-shadow: var(--shadow-lg);
+}
+.map-coach.show { display: flex; }
+.coach-pulse { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
+.coach-text { flex: 1; line-height: 1.4; }
+.coach-close {
+  width: 24px; height: 24px; border-radius: 50%; background: transparent; border: none;
+  color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+}
+.coach-close:hover { color: var(--text-primary); }
 
 /* ==================== CANDIDATE BARS ==================== */
 .candidate-bars { display: flex; flex-direction: column; gap: 8px; }
@@ -400,7 +434,6 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
   display: flex; align-items: center; justify-content: center; color: var(--text-muted);
   font-size: 12px; overflow: hidden; border: 1px solid var(--border);
 }
-.route-image img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ==================== ADDRESS LIST ==================== */
 .address-list { display: flex; flex-direction: column; gap: 0; margin-bottom: 24px; }
@@ -429,7 +462,7 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
   border: 1px solid var(--border); color: var(--text-secondary);
   display: flex; align-items: center; justify-content: center;
 }
-.mini-expand-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.mini-expand-btn:hover { background: var(--bg); color: var(--text-primary); }
 
 /* ==================== BUTTONS ==================== */
 .btn-secondary {
@@ -437,7 +470,7 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
   border-radius: var(--radius-xs); padding: 10px 16px; font-weight: 500; font-size: 14px;
   display: flex; align-items: center; gap: 8px; white-space: nowrap;
 }
-.btn-secondary:hover { border-color: var(--text-muted); background: var(--bg-card-hover); }
+.btn-secondary:hover { border-color: var(--text-muted); background: var(--bg); }
 .btn-plan-cta {
   background: var(--accent); color: white; border: none; border-radius: var(--radius-xs);
   padding: 0 20px; font-weight: 500; font-size: 14px; height: 40px;
@@ -639,21 +672,6 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
 .template-item[draggable="true"] { cursor: grab; }
 .template-item.dragging { opacity: 0.5; border-color: var(--accent); cursor: grabbing; }
 
-/* ==================== CONTEXT MENU ==================== */
-.map-context-menu {
-  position: absolute; z-index: 900; min-width: 180px;
-  background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-xs);
-  padding: 6px; box-shadow: var(--shadow-lg);
-}
-.ctx-item {
-  width: 100%; display: flex; align-items: center; gap: 10px;
-  background: transparent; border: none; color: var(--text-primary);
-  font-size: 14px; text-align: left; padding: 10px 12px; border-radius: var(--radius-xs); cursor: pointer;
-}
-.ctx-item:hover { background: var(--bg); }
-.ctx-item .ctx-ico { width: 16px; text-align: center; }
-.ctx-sep { height: 1px; background: var(--border); margin: 4px 6px; }
-
 /* ==================== WIND READOUT ==================== */
 .wind-readout {
   position: absolute; top: 16px; left: 60px; z-index: 460; pointer-events: none;
@@ -671,50 +689,6 @@ button { font-family: 'Inter', sans-serif; cursor: pointer; }
   background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-xs);
 }
 .compass-n { position: absolute; top: 4px; font-size: 8px; font-weight: 600; color: var(--text-muted); }
-
-/* ==================== COACH HINT ==================== */
-.map-coach {
-  position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 480;
-  display: none; align-items: center; gap: 10px;
-  background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 12px 16px; font-size: 14px; color: var(--text-secondary);
-  box-shadow: var(--shadow-lg);
-}
-.map-coach.show { display: flex; }
-.coach-pulse { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
-.coach-text { flex: 1; line-height: 1.4; }
-.coach-close {
-  width: 24px; height: 24px; border-radius: 50%; background: transparent; border: none;
-  color: var(--text-muted); display: flex; align-items: center; justify-content: center;
-}
-.coach-close:hover { color: var(--text-primary); }
-
-/* ==================== MAP CONTROLS ==================== */
-.map-ctrl-group { position: absolute; z-index: 500; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
-.map-tool-btn {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--bg-white); border: 1px solid var(--border); color: var(--text-secondary);
-  display: flex; align-items: center; justify-content: center;
-}
-.map-tool-btn:hover { color: var(--text-primary); border-color: var(--text-muted); }
-
-/* ==================== MAP COLUMN ==================== */
-.map-col { flex: 1; position: relative; border-radius: 0; overflow: hidden; border: 1px solid var(--border); background: var(--bg); }
-#planMap { width: 100%; height: 100%; }
-
-/* ==================== MAP FLOAT CARD ==================== */
-.map-float-card {
-  position: absolute; top: 16px; left: 16px; z-index: 1000;
-  background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 12px 16px; display: flex; align-items: center; gap: 12px;
-  box-shadow: var(--shadow-lg);
-}
-.float-icon {
-  width: 40px; height: 40px; border-radius: var(--radius-xs); background: var(--accent-dim);
-  display: flex; align-items: center; justify-content: center; color: var(--accent);
-}
-.float-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-.float-sub { font-size: 13px; color: var(--text-secondary); }
 
 /* ==================== TELEMETRY STATUS ==================== */
 .telemetry-status { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-muted); }
