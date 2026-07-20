@@ -516,7 +516,7 @@ tr.chosen td:first-child { border-left: 2px solid var(--accent); }
 /* plan page matches the flat preview: no icon rail, full-width shell */
 .plan-page .sidebar { display: none; }
 .plan-page .topbar-global { left: 16px; }
-.plan-page .plan-shell { left: 16px; }
+.plan-page .plan-shell { top: 84px; left: 16px; bottom: 16px; }
 .plan-page .new-mission-btn { display: none; }
 .plan-page .list-col { width: 200px; }
 
