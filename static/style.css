@@ -508,7 +508,7 @@ tr.chosen td:first-child { border-left: 2px solid var(--accent); }
    ================================================================= */
 .plan-shell {
   position: fixed;
-  top: 16px; left: 88px; right: 16px; bottom: 16px;
+  top: 84px; left: 88px; right: 16px; bottom: 16px;
   display: flex; flex-direction: column; gap: 16px;
   z-index: 10;
 }

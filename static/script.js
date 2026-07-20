@@ -125,7 +125,7 @@ function updateHeader() {
 
   const noMissions = missionsCache.length === 0;
   const progress = document.getElementById('planProgress');
-  if (progress) progress.classList.toggle('show', noMissions);
+  if (progress) progress.classList.add('show');
   const coach = document.getElementById('mapCoach');
   if (coach) coach.classList.toggle('show', noMissions && !coachDismissed && !userInteracted);
   if (noMissions && !userInteracted) setStepper(1);
