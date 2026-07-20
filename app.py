@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime, timezone
 
 from dotenv import load_dotenv
-load_dotenv()  # must run before importing airquality, which reads AIRNOW_API_KEY at import time
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))  # must run before importing airquality, which reads AIRNOW_API_KEY at import time
 
 from flask import Flask, request, jsonify, render_template, send_from_directory
 
