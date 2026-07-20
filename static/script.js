@@ -815,6 +815,12 @@ document.getElementById('locateBtn')?.addEventListener('click', () => {
   if (dropMarker) { planMap.removeLayer(dropMarker); dropMarker = null; }
 });
 
+document.getElementById('miniExpandBtn')?.addEventListener('click', () => {
+  if (!planMap) return;
+  const entry = missionsCache.find(m => m.mission_id === selectedMissionId);
+  if (entry && entry.target) planMap.flyTo([entry.target.lat, entry.target.lon], 15, { duration: 0.5 });
+});
+
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
   if (e.target.matches('input, select, textarea')) return;
