@@ -6,64 +6,66 @@
 
   <!-- Toolbar: actions first, status second -->
   <div class="plan-toolbar">
-    <div class="pt-field" id="locPickerWrap">
-      <label class="pt-label">Location</label>
-      <div class="pt-search">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
-        <select id="address">
-          <option value="" disabled selected>Choose a location</option>
-          <option value="virginia">Virginia</option>
-          <option value="california">California</option>
-        </select>
-        <button type="button" class="loc-picker-btn" id="locPickerBtn" title="Search, recents & favorites" onclick="openLocPanel()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        </button>
-      </div>
-      <div class="loc-panel" id="locPanel" style="display:none;">
-        <div class="loc-search">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input type="text" id="locSearchInput" placeholder="Search locations..." autocomplete="off">
+    <div class="pt-fields">
+      <div class="pt-field" id="locPickerWrap">
+        <label class="pt-label">Location</label>
+        <div class="pt-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
+          <select id="address">
+            <option value="" disabled selected>Choose a location</option>
+            <option value="virginia">Virginia</option>
+            <option value="california">California</option>
+          </select>
+          <button type="button" class="loc-picker-btn" id="locPickerBtn" title="Search, recents & favorites" onclick="openLocPanel()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          </button>
         </div>
-        <div class="loc-body"></div>
+        <div class="loc-panel" id="locPanel" style="display:none;">
+          <div class="loc-search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="locSearchInput" placeholder="Search locations..." autocomplete="off">
+          </div>
+          <div class="loc-body"></div>
+        </div>
+      </div>
+      <div class="pt-field">
+        <label class="pt-label" for="range">Search radius</label>
+        <div class="pt-range-wrap">
+          <input type="number" id="range" class="pt-range" placeholder="10" step="0.1" min="0.5" title="Maximum one-way flight radius in miles — drones return to home base.">
+          <span class="pt-unit">mi</span>
+        </div>
+      </div>
+      <button class="btn-plan-cta disabled" id="planBtn" onclick="planMission()" aria-disabled="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        Plan Mission
+        <span class="cta-kbd">⏎</span>
+      </button>
+      <div class="pt-status">
+        <div class="metric-cards">
+          <div class="metric">
+            <span class="m-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2L4 9v6l8 7 8-7V9l-8-7z"/></svg></span>
+            <span class="m-k">Drones</span><span class="m-v" id="mDrones">1</span>
+          </div>
+          <div class="metric">
+            <span class="m-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 6h14M5 12h14M5 18h9"/></svg></span>
+            <span class="m-k">Missions</span><span class="m-v" id="mMissions">0</span>
+          </div>
+          <div class="metric">
+            <span class="m-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
+            <span class="m-k">Candidates</span><span class="m-v" id="mCandidates">--</span>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="pt-field">
-      <label class="pt-label" for="range">Search radius</label>
-      <div class="pt-range-wrap">
-        <input type="number" id="range" class="pt-range" placeholder="10" step="0.1" min="0.5" title="Maximum one-way flight radius in miles — drones return to home base.">
-        <span class="pt-unit">mi</span>
-      </div>
-    </div>
-    <button class="btn-plan-cta disabled" id="planBtn" onclick="planMission()" aria-disabled="true">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-      Plan Mission
-      <span class="cta-kbd">⏎</span>
-    </button>
-    <div class="pt-status">
-      <div class="metric-cards">
-        <div class="metric">
-          <span class="m-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2L4 9v6l8 7 8-7V9l-8-7z"/></svg></span>
-          <span class="m-k">Drones</span><span class="m-v" id="mDrones">1</span>
-        </div>
-        <div class="metric">
-          <span class="m-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 6h14M5 12h14M5 18h9"/></svg></span>
-          <span class="m-k">Missions</span><span class="m-v" id="mMissions">0</span>
-        </div>
-        <div class="metric">
-          <span class="m-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
-          <span class="m-k">Candidates</span><span class="m-v" id="mCandidates">--</span>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Step indicator (preview style) -->
-  <div class="plan-progress" id="planProgress">
-    <div class="pp-step active" data-step="1"><span class="pp-label" data-num="1">Choose location</span></div>
-    <div class="pp-track"><span class="pp-fill"></span></div>
-    <div class="pp-step" data-step="2"><span class="pp-label" data-num="2">Plan mission</span></div>
-    <div class="pp-track"><span class="pp-fill"></span></div>
-    <div class="pp-step" data-step="3"><span class="pp-label" data-num="3">Launch</span></div>
+    <!-- Step indicator embedded in toolbar -->
+    <div class="plan-progress" id="planProgress">
+      <div class="pp-step active" data-step="1"><span class="pp-label" data-num="1">Choose location</span></div>
+      <div class="pp-track"><span class="pp-fill"></span></div>
+      <div class="pp-step" data-step="2"><span class="pp-label" data-num="2">Plan mission</span></div>
+      <div class="pp-track"><span class="pp-fill"></span></div>
+      <div class="pp-step" data-step="3"><span class="pp-label" data-num="3">Launch</span></div>
+    </div>
   </div>
 
   <div class="plan-body" id="planBody">

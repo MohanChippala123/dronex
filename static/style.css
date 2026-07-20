@@ -105,8 +105,8 @@ button, .side-icon, .mission-card, input, .map-tool-btn, .d-close, .template-ite
   position: fixed;
   top: 16px; left: 84px; right: 16px;
   height: 52px;
-  background: var(--panel);
-  border: 1px solid var(--line);
+  background: var(--surface-1);
+  border: 1px solid var(--line-2);
   border-radius: var(--radius);
   display: flex; align-items: center; gap: 9px;
   padding: 0 18px;
@@ -508,8 +508,8 @@ tr.chosen td:first-child { border-left: 2px solid var(--accent); }
    ================================================================= */
 .plan-shell {
   position: fixed;
-  top: 84px; left: 88px; right: 16px; bottom: 16px;
-  display: flex; flex-direction: column; gap: 16px;
+  top: 100px; left: 88px; right: 16px; bottom: 16px;
+  display: flex; flex-direction: column; gap: 10px;
   z-index: 10;
 }
 
@@ -524,12 +524,22 @@ tr.chosen td:first-child { border-left: 2px solid var(--accent); }
 .spinner { width: 13px; height: 13px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; animation: spin .7s linear infinite; flex-shrink: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* -- toolbar: actions first, status second -- */
+/* -- toolbar: single panel wrapping fields + stepper -- */
 .plan-toolbar {
-  display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap;
-  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 12px 16px;
+  display: flex; flex-direction: column; flex-shrink: 0;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: var(--radius);
 }
+.pt-fields {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 14px 18px;
+}
+.plan-progress {
+  display: none; align-items: center; gap: 8px; flex-shrink: 0;
+  padding: 9px 18px; border-top: 1px solid var(--line); font-size: 12px;
+  background: rgba(255,255,255,0.015);
+}
+.plan-progress.show { display: flex; }
+
 .pt-field { display: flex; flex-direction: column; gap: 6px; position: relative; }
 .pt-label { font-size: 11px; color: var(--text-dim); font-weight: 500; letter-spacing: 0.02em; }
 .pt-search {
@@ -806,11 +816,6 @@ tr.chosen td:first-child { border-left: 2px solid var(--accent); }
 .nfz-tip::before { border-top-color: rgba(255,107,129,0.4) !important; }
 
 /* -- step indicator (docked under toolbar, preview style) -- */
-.plan-progress {
-  display: none; align-items: center; gap: 8px; flex-shrink: 0;
-  padding: 11px 18px; border-bottom: 1px solid var(--line); font-size: 12px;
-}
-.plan-progress.show { display: flex; }
 .pp-step { display: flex; align-items: center; gap: 0; font-size: 12px; font-weight: 500; color: var(--text-dim); white-space: nowrap; }
 .pp-num { display: none; }
 .pp-track { width: 40px; max-width: 40px; height: 1px; background: var(--line-strong); overflow: hidden; margin: 0 8px; }
