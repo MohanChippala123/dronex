@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-{% block title %}DroneX -- Planning{% endblock %}
+{% block title %}DroneX - Operations Console{% endblock %}
 {% block body_attrs %}class="plan-page"{% endblock %}
 {% block content %}
 
 <div class="plan-shell">
 
-  <!-- Toolbar: actions first, status second -->
+  <!-- Toolbar -->
   <div class="plan-toolbar">
     <div class="pt-field" id="locPickerWrap">
       <div class="pt-search">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
+        <svg class="avi-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
         <span class="pt-inline">Location</span>
         <select id="address">
           <option value="" disabled selected>Choose a location</option>
@@ -38,38 +38,55 @@
     <button class="btn-plan-cta disabled" id="planBtn" onclick="planMission()" aria-disabled="true">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
       Plan Mission
-      <span class="cta-kbd">⏎</span>
+      <span class="cta-kbd">&#9166;</span>
     </button>
     <div class="pt-status">
-      <div class="metric-cards">
-        <div class="metric">
-          <span class="m-k">Drones</span>
-          <span class="m-v" id="mDrones">1</span>
+      <div class="instrument-panel">
+        <div class="instrument-cell">
+          <span class="ic-k">DRONES</span>
+          <span class="ic-v" id="mDrones">1</span>
         </div>
-        <div class="metric">
-          <span class="m-k">Missions</span>
-          <span class="m-v" id="mMissions">0</span>
+        <div class="ic-sep"></div>
+        <div class="instrument-cell">
+          <span class="ic-k">MISSIONS</span>
+          <span class="ic-v" id="mMissions">0</span>
         </div>
-        <div class="metric">
-          <span class="m-k">Candidates</span>
-          <span class="m-v" id="mCandidates">--</span>
+        <div class="ic-sep"></div>
+        <div class="instrument-cell">
+          <span class="ic-k">CANDIDATES</span>
+          <span class="ic-v" id="mCandidates">--</span>
+          <div class="ic-bar"><div class="ic-bar-fill" id="mCandidatesBar" style="width:0"></div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Step indicator -->
+  <!-- Flight timeline progress -->
   <div class="plan-progress" id="planProgress">
-    <div class="pp-step active" data-step="1"><b class="pp-num">1</b><span class="pp-label">Location</span></div>
-    <div class="pp-track"><span class="pp-fill"></span></div>
-    <div class="pp-step" data-step="2"><b class="pp-num">2</b><span class="pp-label">Mission</span></div>
-    <div class="pp-track"><span class="pp-fill"></span></div>
-    <div class="pp-step" data-step="3"><b class="pp-num">3</b><span class="pp-label">Launch</span></div>
+    <div class="pp-phase active" data-phase="1">
+      <div class="pp-dot"><span class="pp-marker"></span></div>
+      <span class="pp-lbl">LOCATE</span>
+    </div>
+    <div class="pp-line"><div class="pp-line-fill"></div></div>
+    <div class="pp-phase" data-phase="2">
+      <div class="pp-dot"><span class="pp-marker"></span></div>
+      <span class="pp-lbl">CONFIGURE</span>
+    </div>
+    <div class="pp-line"><div class="pp-line-fill"></div></div>
+    <div class="pp-phase" data-phase="3">
+      <div class="pp-dot"><span class="pp-marker"></span></div>
+      <span class="pp-lbl">DEPLOY</span>
+    </div>
+    <div class="pp-line"><div class="pp-line-fill"></div></div>
+    <div class="pp-phase" data-phase="4">
+      <div class="pp-dot"><span class="pp-marker"></span></div>
+      <span class="pp-lbl">ACTIVE</span>
+    </div>
   </div>
 
   <div class="plan-body" id="planBody">
 
-    <!-- Left column: New Mission + templates + recent -->
+    <!-- Left column: mission list + templates -->
     <div class="list-col" id="listCol">
       <button class="new-mission-btn" id="newMissionBtn" onclick="document.getElementById('address').focus()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -106,7 +123,7 @@
         <div class="empty-title">No missions yet</div>
         <div class="empty-sub">Choose a location and create your first flight.</div>
         <button class="empty-cta" onclick="openLocPanel(); document.getElementById('address')?.focus();">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M2 12h20"/></svg>
           Browse example missions
         </button>
       </div>
@@ -125,7 +142,7 @@
         <div class="d-head">
           <div>
             <div class="d-title">Mission #<span id="d-id">--</span></div>
-            <span class="status-pill" id="d-status"><span class="dot"></span><span id="d-status-label">--</span></span>
+            <span class="status-badge sb-active" id="d-status"><span class="sb-indicator"></span><span id="d-status-label">--</span></span>
           </div>
           <div class="d-close" onclick="deselectMission()" title="Deselect">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -151,15 +168,16 @@
         <div class="route-box">
           <div class="route-info">
             <div class="route-row">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11a8 8 0 0 1 16 0"/><path d="M7.5 11a4.5 4.5 0 0 1 9 0"/><circle cx="12" cy="11" r="1.4" fill="currentColor" stroke="none"/><path d="M12 12.4V21"/></svg>
-              <span id="d-drone">DRN-01 · home base</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              <span id="d-drone">DRN-01</span>
+              <span class="telemetry-status"><span class="ts-dot ts-ok"></span> home base</span>
             </div>
             <div class="route-row">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M12 4l8 8-8 8"/></svg>
               <span id="d-range-badge">-- miles round trip</span>
             </div>
             <div class="route-row">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l7 4v6c0 5-3.5 9.5-7 11-3.5-1.5-7-6-7-11V6l7-4z"/></svg>
               <span id="d-airspace-badge">Airspace not checked</span>
             </div>
           </div>
@@ -193,7 +211,7 @@
       <div class="map-compass" aria-hidden="true">
         <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
           <circle cx="20" cy="20" r="16" stroke="rgba(255,255,255,0.10)" stroke-width="0.75"/>
-          <path d="M20 6 L22 20 L20 34 L18 20 Z" fill="rgba(0,229,200,0.45)"/>
+          <path d="M20 6 L22 20 L20 34 L18 20 Z" fill="rgba(200,146,42,0.45)"/>
           <path d="M20 34 L18 20 L22 20 Z" fill="rgba(255,255,255,0.15)"/>
         </svg>
         <span class="compass-n">N</span>

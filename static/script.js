@@ -59,13 +59,13 @@ function resetSettings() {
 // ---------------- helpers ----------------
 
 function aqiColor(aqi) {
-  if (aqi === null || aqi === undefined) return '#5c6370';
-  if (aqi <= 50) return '#3cd47a';
-  if (aqi <= 100) return '#f0a030';
-  if (aqi <= 150) return '#e84057';
-  if (aqi <= 200) return '#e84057';
-  if (aqi <= 300) return '#c21030';
-  return '#8b1a1a';
+  if (aqi === null || aqi === undefined) return '#4a4840';
+  if (aqi <= 50) return '#5a6a44';
+  if (aqi <= 100) return '#c8922a';
+  if (aqi <= 150) return '#c26a20';
+  if (aqi <= 200) return '#8a3030';
+  if (aqi <= 300) return '#8a3030';
+  return '#5a2020';
 }
 
 function divIcon(html, size) {
@@ -87,14 +87,15 @@ function toast(msg, type = 'info', timeout = 6000) {
   stack.appendChild(el);
   if (timeout) setTimeout(close, timeout);
 }
+
 function aqiCategoryInfo(aqi) {
-  if (aqi === null || aqi === undefined) return { label: 'Unknown', color: '#5c6370' };
-  if (aqi <= 50) return { label: 'Good', color: '#3cd47a' };
-  if (aqi <= 100) return { label: 'Moderate', color: '#f0a030' };
-  if (aqi <= 150) return { label: 'Unhealthy (Sensitive)', color: '#e84057' };
-  if (aqi <= 200) return { label: 'Unhealthy', color: '#e84057' };
-  if (aqi <= 300) return { label: 'Very Unhealthy', color: '#c21030' };
-  return { label: 'Hazardous', color: '#8b1a1a' };
+  if (aqi === null || aqi === undefined) return { label: 'Unknown', color: '#4a4840' };
+  if (aqi <= 50) return { label: 'Good', color: '#5a6a44' };
+  if (aqi <= 100) return { label: 'Moderate', color: '#c8922a' };
+  if (aqi <= 150) return { label: 'Unhealthy (Sensitive)', color: '#c26a20' };
+  if (aqi <= 200) return { label: 'Unhealthy', color: '#8a3030' };
+  if (aqi <= 300) return { label: 'Very Unhealthy', color: '#8a3030' };
+  return { label: 'Hazardous', color: '#5a2020' };
 }
 
 function fmtDate(iso) {
@@ -105,19 +106,19 @@ function fmtDate(iso) {
   if (isNaN(d.getTime())) return 'No date';
   let time = '';
   const t = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-  if (t && t !== 'Invalid Date') time = t + ' · ';
+  if (t && t !== 'Invalid Date') time = t + ' \u00b7 ';
   const date = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   return time + date;
 }
 
 function statusFor(entry) {
   if (entry.aqi_after !== null && entry.aqi_after !== undefined) {
-    return { cls: 'complete', label: 'Complete' };
+    return { cls: 'complete', label: 'Complete', sbCls: 'sb-ok' };
   }
   if (window.__latestTelemetry && window.__latestTelemetry.mission_id === entry.mission_id) {
-    return { cls: 'transit', label: 'In Flight' };
+    return { cls: 'transit', label: 'In Flight', sbCls: 'sb-active' };
   }
-  return { cls: 'awaiting', label: 'Awaiting' };
+  return { cls: 'awaiting', label: 'Awaiting', sbCls: 'sb-wait' };
 }
 
 // ---------------- header title / toolbar ----------------
@@ -136,6 +137,14 @@ function updateHeader() {
   set('mDrones', '1');
   set('mMissions', missionsCache.length);
   set('mCandidates', candidateCount);
+
+  // Update candidate bar fill
+  const barEl = document.getElementById('mCandidatesBar');
+  if (barEl && typeof candidateCount === 'number') {
+    barEl.style.width = Math.min(candidateCount * 15, 100) + '%';
+  } else if (barEl) {
+    barEl.style.width = '0';
+  }
 
   const noMissions = missionsCache.length === 0;
   const progress = document.getElementById('planProgress');
@@ -191,7 +200,7 @@ function renderList() {
       <div class="mc-body">
         <div class="mc-top">
           <span class="mc-title">${title}</span>
-          <span class="status-pill ${status.cls}"><span class="dot"></span>${status.label}</span>
+          <span class="status-badge ${status.sbCls}"><span class="sb-indicator"></span>${status.label}</span>
         </div>
         <div class="mc-meta">
           <span>#${entry.mission_id}</span>
@@ -252,8 +261,8 @@ function drawNoFlyZones() {
   ];
   zones.forEach(z => {
     L.circle([z.lat, z.lon], {
-      radius: z.r, color: 'rgba(255,107,129,0.4)', weight: 1,
-      fillColor: '#ff6b81', fillOpacity: 0.05, dashArray: '4 6', interactive: true,
+      radius: z.r, color: 'rgba(200,146,42,0.25)', weight: 1,
+      fillColor: '#c8922a', fillOpacity: 0.04, dashArray: '4 6', interactive: true,
     }).addTo(noFlyLayer).bindTooltip(z.label, { className: 'nfz-tip', direction: 'top' });
   });
 }
@@ -268,10 +277,10 @@ function drawFlightHistory() {
     if (m.mission_id === selectedMissionId) return;
     if (!m.target || m.target.lat == null) return;
     L.polyline([[droneHome.lat, droneHome.lon], [m.target.lat, m.target.lon]], {
-      color: 'rgba(255,255,255,0.16)', weight: 1, dashArray: '1 6', interactive: false,
+      color: 'rgba(200,146,42,0.15)', weight: 1, dashArray: '1 6', interactive: false,
     }).addTo(historyLayer);
     L.circleMarker([m.target.lat, m.target.lon], {
-      radius: 2.5, color: 'rgba(255,255,255,0.35)', weight: 1, fillOpacity: 0.4, interactive: false,
+      radius: 2.5, color: 'rgba(200,146,42,0.35)', weight: 1, fillOpacity: 0.4, interactive: false,
     }).addTo(historyLayer);
   });
 }
@@ -305,7 +314,7 @@ function onMapClick(e) {
   dropMarker._icon?.querySelector('.drop-pin')?.classList.add('dropped');
   markInteracted();
   updatePlanBtn();
-  toast('This is a preview marker — choose Virginia or California above to plan a mission.', 'info');
+  toast('This is a preview marker \u2014 choose Virginia or California above to plan a mission.', 'info');
 }
 
 function markInteracted() {
@@ -321,18 +330,19 @@ function dismissCoach() {
   if (coach) coach.classList.remove('show');
 }
 
+// Timeline stepper: phases 1-4, active=phase, done=phase<current, line fills
 function setStepper(step) {
-  document.querySelectorAll('.plan-progress .pp-step').forEach(el => {
-    const s = parseInt(el.getAttribute('data-step'), 10);
+  document.querySelectorAll('.plan-progress .pp-phase').forEach(el => {
+    const s = parseInt(el.getAttribute('data-phase'), 10);
     el.classList.toggle('active', s === step);
     el.classList.toggle('done', s < step);
   });
-  const steps = Array.from(document.querySelectorAll('.plan-progress .pp-step'));
-  const tracks = Array.from(document.querySelectorAll('.plan-progress .pp-track'));
-  tracks.forEach((t, i) => {
-    const prev = steps[i];
-    const prevStep = prev ? parseInt(prev.getAttribute('data-step'), 10) : 0;
-    t.classList.toggle('done', prevStep < step);
+  document.querySelectorAll('.plan-progress .pp-line').forEach((line, i) => {
+    const phaseBefore = i + 1;
+    const fill = line.querySelector('.pp-line-fill');
+    if (fill) {
+      fill.style.width = phaseBefore < step ? '100%' : '0%';
+    }
   });
 }
 
@@ -426,7 +436,7 @@ function setupTemplateDnd() {
     }
     onMapClick({ latlng });
     const name = tpl ? tpl.replace(/^\w/, c => c.toUpperCase()) : 'Mission';
-    toast(`${name} template dropped — pick a location, then Plan Mission.`, 'info');
+    toast(`${name} template dropped \u2014 pick a location, then Plan Mission.`, 'info');
     dragTemplate = null;
   });
 }
@@ -504,14 +514,14 @@ function renderLocPanel(filter = '') {
 
   const row = (l, tag) => `
     <div class="loc-row" onclick="chooseLocation('${l.value}')">
-      <span class="loc-star ${favs.includes(l.value) ? 'on' : ''}" title="Favorite" onclick="toggleFavorite('${l.value}', event)">${favs.includes(l.value) ? '★' : '☆'}</span>
+      <span class="loc-star ${favs.includes(l.value) ? 'on' : ''}" title="Favorite" onclick="toggleFavorite('${l.value}', event)">${favs.includes(l.value) ? '\u2605' : '\u2606'}</span>
       <span class="loc-name">${l.label}</span>
       ${tag ? `<span class="loc-tag">${tag}</span>` : ''}
     </div>`;
 
   let html = '';
   if (!f && favs.length) {
-    html += `<div class="loc-group">Favorites</div>` + favs.map(v => LOCATIONS.find(l => l.value === v)).filter(Boolean).map(l => row(l, '★')).join('');
+    html += `<div class="loc-group">Favorites</div>` + favs.map(v => LOCATIONS.find(l => l.value === v)).filter(Boolean).map(l => row(l, '\u2605')).join('');
   }
   if (!f && recents.length) {
     html += `<div class="loc-group">Recent</div>` + recents.map(v => LOCATIONS.find(l => l.value === v)).filter(Boolean).map(l => row(l, 'recent')).join('');
@@ -548,7 +558,7 @@ function plotMissionOnMap(entry, rich) {
   }
 
   routeLine = L.polyline([[droneHome.lat, droneHome.lon], [targetLat, targetLon]], {
-    color: '#c265ff', weight: 3, opacity: 0.85, dashArray: '2 8',
+    color: '#c8922a', weight: 2, opacity: 0.8, dashArray: '2 8',
   }).addTo(planMap);
 
   const bounds = L.latLngBounds([[droneHome.lat, droneHome.lon], [targetLat, targetLon]]);
@@ -574,7 +584,7 @@ function drawRangeRing() {
   const meters = (miles / 2) * 1609.34; // one-way radius from a round-trip budget
   rangeRing = L.circle([droneHome.lat, droneHome.lon], {
     radius: meters,
-    color: 'rgba(94,106,210,0.4)', weight: 1, fillColor: 'rgba(94,106,210,1)', fillOpacity: 0.04,
+    color: 'rgba(200,146,42,0.3)', weight: 1, fillColor: 'rgba(200,146,42,1)', fillOpacity: 0.03,
     dashArray: '3 7', interactive: false,
   }).addTo(planMap);
 }
@@ -587,6 +597,13 @@ function placeDroneMarker() {
     droneMarker = L.marker([t.lat, t.lon], {
       icon: divIcon('<div class="drone-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L4 9v6l8 7 8-7V9l-8-7z"/></svg></div>', 34),
     }).addTo(planMap).bindPopup('Live position');
+  }
+  // Toggle communicating class on home marker
+  if (homeMarker && homeMarker._icon) {
+    const hm = homeMarker._icon.querySelector('.home-marker');
+    if (hm) {
+      hm.classList.toggle('communicating', !!(t && t.received_at));
+    }
   }
 }
 
@@ -636,8 +653,8 @@ function renderDetail(entry, rich) {
 
   const status = statusFor(entry);
   document.getElementById('d-id').textContent = entry.mission_id;
-  const statusPill = document.getElementById('d-status');
-  statusPill.className = 'status-pill ' + status.cls;
+  const statusBadge = document.getElementById('d-status');
+  statusBadge.className = 'status-badge ' + status.sbCls;
   document.getElementById('d-status-label').textContent = status.label;
 
   document.getElementById('d-address').textContent = (entry.address_resolved || entry.address || '--').slice(0, 60);
@@ -646,21 +663,21 @@ function renderDetail(entry, rich) {
   const aqiVal = entry.aqi_before !== null && entry.aqi_before !== undefined ? entry.aqi_before : null;
   const cat = aqiCategoryInfo(aqiVal);
   document.getElementById('d-aqi').innerHTML = aqiVal !== null
-    ? `${aqiVal} <span class="aqi-pill" style="background:${cat.color}22; color:${cat.color}"><span class="dot" style="background:${cat.color}"></span>${cat.label}</span>`
+    ? `<span style="color:${cat.color};font-weight:700;font-family:'JetBrains Mono',monospace">${aqiVal}</span> <span class="status-badge ${cat.color === '#5a6a44' ? 'sb-ok' : cat.color === '#c8922a' ? 'sb-wait' : 'sb-fail'}"><span class="sb-indicator"></span>${cat.label}</span>`
     : '--';
 
   renderCandidateBars(rich);
 
-  document.getElementById('d-drone').textContent = `DRN-01 \u00b7 home base`;
+  document.getElementById('d-drone').textContent = `DRN-01`;
 
   const r = entry.range_info;
   document.getElementById('d-range-badge').innerHTML = r
-    ? `${r.round_trip_miles} mi round trip \u00b7 <span style="color:${r.in_range ? 'var(--green)' : 'var(--red)'}">${r.in_range ? 'in range' : 'out of range'}</span>`
+    ? `${r.round_trip_miles} mi round trip \u00b7 <span style="color:${r.in_range ? '#5a6a44' : '#8a3030'}">${r.in_range ? 'in range' : 'out of range'}</span>`
     : 'not calculated';
 
   const a = rich ? rich.airspace : null;
   document.getElementById('d-airspace-badge').innerHTML = a
-    ? (a.warning ? `<span style="color:var(--amber)">${a.checked ? 'Airspace flagged' : 'Airspace unverified'}</span>` : `<span style="color:var(--green)">Airspace clear</span>`)
+    ? (a.warning ? `<span style="color:#c8922a">${a.checked ? 'Airspace flagged' : 'Airspace unverified'}</span>` : `<span style="color:#5a6a44">Airspace clear</span>`)
     : 'Only checked for missions planned this session';
 
   document.getElementById('d-home-coords').textContent = `Home base \u00b7 ${droneHome.lat.toFixed(4)}, ${droneHome.lon.toFixed(4)}`;
@@ -694,9 +711,9 @@ function renderCandidateBars(rich) {
     const isChosen = c.lat === rich.chosen.lat && c.lon === rich.chosen.lon;
     return `
       <div class="cbar ${isChosen ? 'chosen' : ''}">
-        <div class="cbar-top"><span>${isChosen ? '★ Chosen' : 'Cand. ' + (i + 1)}</span><b style="color:${cat.color}">${c.worst_aqi}</b></div>
+        <div class="cbar-top"><span>${isChosen ? '\u2605 Chosen' : 'Cand. ' + (i + 1)}</span><b style="color:${cat.color}">${c.worst_aqi}</b></div>
         <div class="cbar-track"><div class="cbar-fill" style="width:${pct}%; background:${cat.color}"></div></div>
-        <div class="cbar-sub">${c.worst_param || 'AQI'} · ${c.distance_miles} mi</div>
+        <div class="cbar-sub">${c.worst_param || 'AQI'} \u00b7 ${c.distance_miles} mi</div>
       </div>`;
   }).join('');
 }
@@ -766,7 +783,7 @@ async function planMission() {
     const data = await res.json();
     if (!res.ok) { showError(data.error || 'Something went wrong.'); return; }
 
-    toast(`Mission #${data.mission_id} planned — target AQI ${data.chosen.worst_aqi}.`, 'success');
+    toast(`Mission #${data.mission_id} planned \u2014 target AQI ${data.chosen.worst_aqi}.`, 'success');
     pushRecent(location);
     markInteracted();
     if (dropMarker) { planMap.removeLayer(dropMarker); dropMarker = null; }
@@ -849,7 +866,7 @@ document.getElementById('miniExpandBtn')?.addEventListener('click', () => {
 document.addEventListener('keydown', (e) => {
   if (e.target.matches('input, select, textarea')) return;
   if (e.key === 'n' || e.key === 'N') { e.preventDefault(); document.getElementById('address')?.focus(); markInteracted(); }
-  if (e.key === 'l' || e.key === 'L') { /* launch = plan current selection if set */ if (selectedMissionId) toast('Mission already planned — launch from the drone.', 'info'); }
+  if (e.key === 'l' || e.key === 'L') { /* launch = plan current selection if set */ if (selectedMissionId) toast('Mission already planned \u2014 launch from the drone.', 'info'); }
 });
 
 // ---------------- wind indicator (subtle ambient telemetry) ----------------
