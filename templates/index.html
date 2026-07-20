@@ -8,9 +8,9 @@
   <!-- Toolbar: actions first, status second -->
   <div class="plan-toolbar">
     <div class="pt-field" id="locPickerWrap">
-      <label class="pt-label">Location</label>
       <div class="pt-search">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
+        <span class="pt-inline">Location</span>
         <select id="address">
           <option value="" disabled selected>Choose a location</option>
           <option value="virginia">Virginia</option>
@@ -29,7 +29,7 @@
       </div>
     </div>
     <div class="pt-field">
-      <label class="pt-label" for="range">Search radius</label>
+      <span class="pt-inline">Radius</span>
       <div class="pt-range-wrap">
         <input type="number" id="range" class="pt-range" placeholder="10" step="0.1" min="0.5" title="Maximum one-way flight radius in miles — drones return to home base.">
         <span class="pt-unit">mi</span>
