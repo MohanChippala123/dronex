@@ -220,33 +220,6 @@
     <div class="map-col" id="mapCol">
       <div id="planMap"></div>
 
-      <!-- Floating Order Card (center of map) -->
-      <div id="floatOrderCard" class="float-order-card" style="display:none;">
-        <div class="float-order-header">
-          <div class="float-order-left">
-            <div class="float-order-id" id="floatOrderId">--</div>
-            <div class="float-order-address" id="floatOrderAddress">--</div>
-          </div>
-          <div class="float-order-progress">
-            <svg viewBox="0 0 56 56">
-              <circle class="progress-bg" cx="28" cy="28" r="24"/>
-              <circle class="progress-fill" cx="28" cy="28" r="24" id="floatProgressCircle"/>
-            </svg>
-            <div class="progress-text" id="floatProgressText">0%</div>
-          </div>
-        </div>
-        <div class="float-order-next">
-          <div class="float-order-next-item">
-            <div class="float-order-next-dot"></div>
-            <div><span class="float-order-next-label">Next</span> <span id="floatNext1">--</span></div>
-          </div>
-          <div class="float-order-next-item">
-            <div class="float-order-next-dot"></div>
-            <div><span class="float-order-next-label">Next</span> <span id="floatNext2">--</span></div>
-          </div>
-        </div>
-      </div>
-
       <div class="map-coach" id="mapCoach">
         <span class="coach-pulse"></span>
         <span class="coach-text">Click the map to preview a spot, then choose Virginia or California above to plan the mission.</span>
@@ -267,6 +240,20 @@
             <line x1="3" y1="21" x2="10" y2="14"/>
           </svg>
         </button>
+      </div>
+
+      <div id="targetFloatCard" class="map-float-card" style="display:none;">
+        <div class="float-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <div>
+          <div class="float-title" id="tfcTitle">--</div>
+          <div class="float-sub" id="tfcSub">--</div>
+        </div>
       </div>
 
       <div class="map-context-menu" id="mapContextMenu" style="display:none;">
@@ -291,171 +278,6 @@
     </div>
 
   </div>
-
-  <!-- Bottom Panel (overlaid on map) -->
-  <div class="bottom-panel" id="bottomPanel">
-    <!-- Mission Info Card -->
-    <div class="mission-info-card" id="missionInfoCard">
-      <div class="mission-info-header">
-        <span class="mission-id-badge" id="missionIdBadge">--</span>
-        <span class="status-pill transit" id="missionStatusPill">
-          <span class="pill-dot"></span>
-          <span id="missionStatusText">In Transit</span>
-        </span>
-        <div class="mission-nav-arrows">
-          <button class="mission-nav-btn" id="prevMissionBtn" title="Previous">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <button class="mission-nav-btn" id="nextMissionBtn" title="Next">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="mission-details">
-        <div class="mission-detail-row">
-          <span class="mission-detail-label">Route:</span>
-          <span class="mission-detail-value" id="missionRoute">--</span>
-        </div>
-        <div class="mission-detail-row">
-          <span class="mission-detail-label">Weight:</span>
-          <span class="mission-detail-value" id="missionWeight">--</span>
-        </div>
-        <div class="mission-detail-row">
-          <span class="mission-detail-label">Delivery Type:</span>
-          <span class="mission-detail-value" id="missionDeliveryType">Standard</span>
-        </div>
-        <div class="mission-detail-row">
-          <span class="mission-detail-label">ETA:</span>
-          <span class="mission-detail-value" id="missionETA">--</span>
-        </div>
-      </div>
-      <div class="mission-driver">
-        <div class="driver-avatar">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        </div>
-        <span class="driver-name" id="missionDriver">Robert R.</span>
-      </div>
-      <div class="truck-image">
-        <svg class="truck-svg" viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="10" y="20" width="70" height="35" rx="4" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="2"/>
-          <rect x="80" y="30" width="30" height="25" rx="4" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="2"/>
-          <circle cx="30" cy="58" r="8" fill="#374151" stroke="#1F2937" stroke-width="2"/>
-          <circle cx="30" cy="58" r="4" fill="#6B7280"/>
-          <circle cx="95" cy="58" r="8" fill="#374151" stroke="#1F2937" stroke-width="2"/>
-          <circle cx="95" cy="58" r="4" fill="#6B7280"/>
-          <rect x="15" y="25" width="20" height="12" rx="2" fill="#BFDBFE" stroke="#93C5FD" stroke-width="1"/>
-          <rect x="40" y="25" width="20" height="12" rx="2" fill="#BFDBFE" stroke="#93C5FD" stroke-width="1"/>
-          <rect x="85" y="35" width="15" height="10" rx="2" fill="#BFDBFE" stroke="#93C5FD" stroke-width="1"/>
-        </svg>
-      </div>
-    </div>
-
-    <!-- Metrics Row -->
-    <div class="metrics-row">
-      <!-- Battery Card -->
-      <div class="metric-card">
-        <div class="metric-header">
-          <span class="metric-label">Battery</span>
-          <span class="metric-sub" id="batteryRange">320 km</span>
-        </div>
-        <div class="metric-value" id="batteryValue">58<span class="metric-value-unit">%</span></div>
-        <div class="metric-chart">
-          <svg class="metric-arc" viewBox="0 0 100 50">
-            <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="#E5E7EB" stroke-width="6" stroke-linecap="round"/>
-            <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="#10B981" stroke-width="6" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="53" id="batteryArc"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- Cargo Load Card -->
-      <div class="metric-card">
-        <div class="metric-header">
-          <span class="metric-label">Cargo Load</span>
-          <span class="metric-sub" id="cargoCapacity">(14.2 / 18t)</span>
-        </div>
-        <div class="metric-value" id="cargoValue">80<span class="metric-value-unit">%</span></div>
-        <div class="metric-chart">
-          <svg class="metric-arc" viewBox="0 0 100 50">
-            <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="#E5E7EB" stroke-width="6" stroke-linecap="round"/>
-            <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="#10B981" stroke-width="6" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="25" id="cargoArc"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- Stats Cards -->
-      <div class="metric-card">
-        <div class="metric-header">
-          <span class="metric-label">Active shipments</span>
-        </div>
-        <div class="metric-value" id="activeShipments">482</div>
-        <div class="metric-chart">
-          <div style="display:flex;align-items:flex-end;gap:2px;height:100%;">
-            <div style="flex:1;background:#E5E7EB;border-radius:2px;height:30%;"></div>
-            <div style="flex:1;background:#E5E7EB;border-radius:2px;height:45%;"></div>
-            <div style="flex:1;background:#E5E7EB;border-radius:2px;height:60%;"></div>
-            <div style="flex:1;background:#E5E7EB;border-radius:2px;height:40%;"></div>
-            <div style="flex:1;background:#E5E7EB;border-radius:2px;height:75%;"></div>
-            <div style="flex:1;background:#E5E7EB;border-radius:2px;height:55%;"></div>
-            <div style="flex:1;background:#E5E7EB;border-radius:2px;height:90%;"></div>
-            <div style="flex:1;background:#E5E7EB;border-radius:2px;height:70%;"></div>
-            <div style="flex:1;background:#E5E7EB;border-radius:2px;height:85%;"></div>
-            <div style="flex:1;background:#E5E7EB;border-radius:2px;height:65%;"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="metric-card">
-        <div class="metric-header">
-          <span class="metric-label">Delivered today</span>
-        </div>
-        <div class="metric-value" id="deliveredToday">127</div>
-        <div class="metric-chart">
-          <svg viewBox="0 0 100 40" style="width:100%;height:100%;">
-            <polyline points="0,35 15,25 30,30 45,15 60,20 75,10 90,18 100,5" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-
-    <!-- Status Performance Card -->
-    <div class="status-card">
-      <div class="status-card-title">Status Performance Overview</div>
-      <div class="status-bars">
-        <div class="status-bar-row">
-          <span class="status-bar-value">12%</span>
-          <div class="status-bar-track">
-            <div class="status-bar-fill" style="width:12%;background:#F59E0B;"></div>
-          </div>
-          <span class="status-bar-label">Loading</span>
-        </div>
-        <div class="status-bar-row">
-          <span class="status-bar-value">57%</span>
-          <div class="status-bar-track">
-            <div class="status-bar-fill" style="width:57%;background:#10B981;"></div>
-          </div>
-          <span class="status-bar-label">In Transit</span>
-        </div>
-        <div class="status-bar-row">
-          <span class="status-bar-value">21%</span>
-          <div class="status-bar-track">
-            <div class="status-bar-fill" style="width:21%;background:#6366F1;"></div>
-          </div>
-          <span class="status-bar-label">Unloading</span>
-        </div>
-        <div class="status-bar-row">
-          <span class="status-bar-value">10%</span>
-          <div class="status-bar-track">
-            <div class="status-bar-fill" style="width:10%;background:#10B981;"></div>
-          </div>
-          <span class="status-bar-label">Delivered</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
 
 {% endblock %}
