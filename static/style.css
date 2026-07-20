@@ -765,7 +765,7 @@ tr.chosen td:first-child { border-left: 3px solid var(--accent); }
 
 /* ==================== STEP INDICATOR ==================== */
 .plan-progress {
-  display: flex; align-items: center; gap: 0; flex-shrink: 0;
+  display: none; align-items: center; gap: 0; flex-shrink: 0;
   background: var(--bg-panel); border-bottom: 1px solid var(--border);
   padding: 0 24px; height: 48px;
 }
@@ -777,7 +777,6 @@ tr.chosen td:first-child { border-left: 3px solid var(--accent); }
   position: absolute; left: 0; top: 0; height: 100%; width: 0%;
   background: var(--accent); transition: width 140ms ease;
 }
-.plan-progress .pp-track.done .pp-fill { width: 100%; }
 .pp-phase {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   position: relative; z-index: 1; min-width: 70px;
