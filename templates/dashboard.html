@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}DroneX -- Live{% endblock %}
+{% block content %}
+
+<div class="map-stage"><div id="map"></div></div>
+
+<div class="topbar">
+  <div class="tb-toggle"><span class="pulse"></span>&nbsp;Live uplink</div>
+  <div class="fill"></div>
+  <div class="tb-badge" id="statusBadge">Waiting...</div>
+</div>
+
+<div class="card-stack">
+  <div class="glass-card">
+    <div class="card-head">
+      <div class="title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11a8 8 0 0 1 16 0"/><path d="M7.5 11a4.5 4.5 0 0 1 9 0"/><circle cx="12" cy="11" r="1.4" fill="currentColor" stroke="none"/><path d="M12 12.4V21"/></svg>
+        Onboard Telemetry
+      </div>
+      <span class="date-pill" id="lastUpdate">--</span>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-cell"><div class="k">Temp</div><div class="v" id="t-temp">--&deg;C</div></div>
+      <div class="stat-cell"><div class="k">Humidity</div><div class="v" id="t-hum">--%</div></div>
+      <div class="stat-cell"><div class="k">Fan</div><div class="v" id="t-fan">--</div></div>
+      <div class="stat-cell"><div class="k">PM2.5</div><div class="v" id="t-pm25">--</div></div>
+      <div class="stat-cell"><div class="k">PM10</div><div class="v" id="t-pm10">--</div></div>
+      <div class="stat-cell"><div class="k">Mission</div><div class="v mono" id="t-mission" style="font-size:14px;">--</div></div>
+    </div>
+    <p class="dim" style="font-size:11px;margin:14px 0 0;">PM2.5/PM10 read <span class="mono">null</span> until the PMS5003's ~30s warm-up finishes after boot -- see <span class="mono">firmware/</span> for the onboard parsing.</p>
+  </div>
+
+  <div class="glass-card">
+    <div class="card-head">
+      <div class="title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 12l4-4 3 3 5-6"/></svg>
+        PM2.5 / PM10 (live)
+      </div>
+      <span class="date-pill mono" id="pmDelta">&mdash;</span>
+    </div>
+    <div class="spark-row">
+      <div class="spark-block"><div class="spark-k">PM2.5</div><div class="spark-track"><div class="spark-fill" id="spark25" style="width:0%"></div></div><div class="spark-v" id="spark25v">--</div></div>
+      <div class="spark-block"><div class="spark-k">PM10</div><div class="spark-track"><div class="spark-fill alt" id="spark10" style="width:0%"></div></div><div class="spark-v" id="spark10v">--</div></div>
+    </div>
+    <p class="dim" style="font-size:11px;margin:12px 0 0;">Bars scale to a 250 &micro;g/m&sup3; reference. PM readings arrive once the sensor finishes warm-up.</p>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_scripts %}
+<script>
+let map, marker;
+function initMap() {
+  map = L.map('map').setView([35.7796, -78.6382], 13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    subdomains: 'abcd',
+    maxZoom: 20,
+  }).addTo(map);
+}
+
+let lastSeen = null;
+const PM_REF = 250; // µg/m³ reference for spark scaling
+
+async function poll() {
+  try {
+    const res = await fetch('/api/telemetry/latest');
+    const data = await res.json();
+    const badge = document.getElementById('statusBadge');
+    if (!data || !data.received_at) {
+      badge.textContent = 'Waiting...';
+      badge.className = 'tb-badge waiting';
+      document.getElementById('lastUpdate').textContent = lastSeen ? 'last ' + timeAgo(lastSeen) + ' ago' : '--';
+      return;
+    }
+    lastSeen = new Date(data.received_at);
+    badge.textContent = 'Live';
+    badge.className = 'tb-badge live';
+    document.getElementById('t-temp').textContent = (data.temp_c ?? '--') + '\u00b0C';
+    document.getElementById('t-hum').textContent = (data.humidity_pct ?? '--') + '%';
+    document.getElementById('t-fan').textContent = data.fan_on ? 'ON' : 'OFF';
+    document.getElementById('t-fan').style.color = data.fan_on ? 'var(--green)' : 'var(--text)';
+    setPm('t-pm25', 'spark25', 'spark25v', data.pm25);
+    setPm('t-pm10', 'spark10', 'spark10v', data.pm10);
+    document.getElementById('t-mission').textContent = data.mission_id ?? '--';
+    document.getElementById('lastUpdate').textContent = lastSeen.toLocaleTimeString();
+
+    if (data.lat && data.lon) {
+      if (!marker) marker = L.marker([data.lat, data.lon]).addTo(map);
+      else marker.setLatLng([data.lat, data.lon]);
+      map.panTo([data.lat, data.lon]);
+    }
+  } catch (e) { console.error(e); }
+}
+
+function setPm(textId, barId, valId, v) {
+  document.getElementById(textId).textContent = v ?? '--';
+  if (v === null || v === undefined) { document.getElementById(barId).style.width = '0%'; document.getElementById(valId).textContent = '--'; return; }
+  const pct = Math.min(100, Math.round((v / PM_REF) * 100));
+  document.getElementById(barId).style.width = pct + '%';
+  document.getElementById(valId).textContent = v + ' µg/m³';
+}
+
+function timeAgo(d) {
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (s < 60) return s + 's';
+  if (s < 3600) return Math.floor(s / 60) + 'm';
+  return Math.floor(s / 3600) + 'h';
+}
+
+initMap();
+poll();
+setInterval(poll, 3000);
+setInterval(() => {
+  if (lastSeen) document.getElementById('lastUpdate').textContent = 'last ' + timeAgo(lastSeen) + ' ago';
+}, 1000);
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}DroneX -- Log{% endblock %}
+{% block content %}
+
+<div class="map-stage"><div id="map"></div></div>
+
+<div class="topbar">
+  <div style="font-weight:600;padding-left:6px;">Flight Log</div>
+  <div class="fill"></div>
+  <div class="tb-badge" id="missionCount">0 missions</div>
+</div>
+
+<div class="content-page">
+  <div class="page-panel">
+    <h1>Past missions</h1>
+    <p class="dim">Good for a portfolio link -- share this page's URL directly.</p>
+
+    <div class="log-summary" id="logSummary"></div>
+
+    <table>
+      <thead>
+        <tr><th></th><th>Date</th><th>Address</th><th>AQI before</th><th>AQI after</th><th>Pollutant</th><th>Round trip (mi)</th><th>In range</th><th>Plan</th><th></th></tr>
+      </thead>
+      <tbody id="logRows"></tbody>
+    </table>
+    <p id="emptyMsg" class="dim" style="display:none;">No missions logged yet -- generate one from the Plan tab.</p>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_scripts %}
+<script>
+function aqiCat(aqi) {
+  if (aqi === null || aqi === undefined) return { label: 'Unknown', color: '#948da3' };
+  if (aqi <= 50) return { label: 'Good', color: '#57d38c' };
+  if (aqi <= 100) return { label: 'Moderate', color: '#b45cff' };
+  if (aqi <= 150) return { label: 'Unhealthy (Sensitive)', color: '#f6a94a' };
+  if (aqi <= 200) return { label: 'Unhealthy', color: '#ff6b81' };
+  if (aqi <= 300) return { label: 'Very Unhealthy', color: '#c24fd6' };
+  return { label: 'Hazardous', color: '#8b1a1a' };
+}
+
+function initMap() {
+  const map = L.map('map').setView([35.7796, -78.6382], 11);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    subdomains: 'abcd', maxZoom: 20,
+  }).addTo(map);
+}
+
+async function loadLog() {
+  const res = await fetch('/api/history');
+  const log = await res.json();
+  document.getElementById('missionCount').textContent = log.length + ' mission' + (log.length === 1 ? '' : 's');
+  const rows = document.getElementById('logRows');
+  rows.innerHTML = '';
+  if (log.length === 0) { document.getElementById('emptyMsg').style.display = 'block'; return; }
+  document.getElementById('emptyMsg').style.display = 'none';
+
+  renderSummary(log);
+
+  log.slice().reverse().forEach(entry => {
+    const tr = document.createElement('tr');
+    tr.className = 'log-row';
+    const date = new Date(entry.created).toLocaleString();
+    const inRange = entry.range_info && entry.range_info.in_range;
+    const cat = aqiCat(entry.aqi_before);
+    const catAfter = aqiCat(entry.aqi_after);
+    const q = (s) => (s == null ? '--' : String(s).replace(/"/g, '&quot;'));
+    tr.innerHTML = `
+      <td><span class="row-caret">▸</span></td>
+      <td>${date}</td>
+      <td>${entry.address_resolved || entry.address}</td>
+      <td><span class="aqi-pill" style="background:${cat.color}22;color:${cat.color}"><span class="dot" style="background:${cat.color}"></span>${entry.aqi_before ?? '--'}</span></td>
+      <td>${entry.aqi_after != null ? `<span class="aqi-pill" style="background:${catAfter.color}22;color:${catAfter.color}"><span class="dot" style="background:${catAfter.color}"></span>${entry.aqi_after}</span>` : '--'}</td>
+      <td>${entry.aqi_param ?? '--'}</td>
+      <td>${entry.range_info ? entry.range_info.round_trip_miles : '--'}</td>
+      <td>${entry.range_info ? `<span class="badge ${inRange ? 'ok' : 'bad'}">${inRange ? 'YES' : 'NO'}</span>` : '--'}</td>
+      <td><a href="/api/plan/${entry.mission_id}">.plan</a></td>
+      <td><button class="row-del" title="Delete mission" data-id="${entry.mission_id}">✕</button></td>
+    `;
+    const detail = document.createElement('tr');
+    detail.className = 'log-detail';
+    detail.style.display = 'none';
+    detail.innerHTML = `<td colspan="10">
+      <div class="log-detail-inner">
+        <div><span class="d-k">Home base</span><span class="mono">${entry.target ? entry.target.lat.toFixed(4) + ', ' + entry.target.lon.toFixed(4) : '--'}</span></div>
+        <div><span class="d-k">Resolved</span><span>${entry.address_resolved || entry.address || '--'}</span></div>
+        <div><span class="d-k">Mission ID</span><span class="mono">${entry.mission_id}</span></div>
+        <div><span class="d-k">Duration</span><span>${entry.duration_seconds != null ? entry.duration_seconds + 's' : '--'}</span></div>
+      </div>
+    </td>`;
+
+    tr.onclick = (e) => {
+      if (e.target.closest('.row-del') || e.target.closest('a')) return;
+      detail.style.display = detail.style.display === 'none' ? 'table-row' : 'none';
+      tr.classList.toggle('open');
+    };
+    rows.appendChild(tr);
+    rows.appendChild(detail);
+  });
+
+  rows.querySelectorAll('.row-del').forEach(btn => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      if (!confirm('Delete mission #' + id + '?')) return;
+      const r = await fetch('/api/history/' + id, { method: 'DELETE' });
+      const d = await r.json();
+      if (d.ok) { loadLog(); }
+    };
+  });
+}
+
+function renderSummary(log) {
+  const withAqi = log.filter(e => e.aqi_before != null);
+  const avg = withAqi.length ? Math.round(withAqi.reduce((s, e) => s + e.aqi_before, 0) / withAqi.length) : '--';
+  const inRange = log.filter(e => e.range_info && e.range_info.in_range).length;
+  const closed = log.filter(e => e.aqi_after != null).length;
+  const box = document.getElementById('logSummary');
+  box.innerHTML = `
+    <div class="sum-cell"><div class="k">Missions</div><div class="v">${log.length}</div></div>
+    <div class="sum-cell"><div class="k">Avg AQI before</div><div class="v">${avg}</div></div>
+    <div class="sum-cell"><div class="k">In range</div><div class="v">${inRange}</div></div>
+    <div class="sum-cell"><div class="k">Closed (AQI after)</div><div class="v">${closed}</div></div>
+  `;
+}
+initMap();
+loadLog();
+</script>
+{% endblock %}
