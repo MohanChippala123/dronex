@@ -515,7 +515,7 @@ tr.chosen td:first-child { border-left: 2px solid var(--accent); }
 .plan-shell {
   position: fixed;
   top: 16px; left: 88px; right: 16px; bottom: 16px;
-  display: flex; flex-direction: column; gap: 16px;
+  display: flex; flex-direction: column; gap: 12px;
   z-index: 10;
 }
 
@@ -525,6 +525,9 @@ tr.chosen td:first-child { border-left: 2px solid var(--accent); }
 .plan-page .plan-shell { top: 84px; left: 16px; bottom: 16px; }
 .plan-page .new-mission-btn { display: none; }
 .plan-page .list-col { width: 200px; }
+/* calm the map: hide decorative compass + wind, keep zoom/controls/coach */
+.plan-page .map-compass,
+.plan-page .wind-readout { display: none; }
 
 .btn-secondary {
   background: var(--panel-solid); border: 1px solid var(--line); color: var(--text);
@@ -604,7 +607,7 @@ tr.chosen td:first-child { border-left: 2px solid var(--accent); }
 .metric .m-v { font-size: 12px; font-weight: 590; font-family: var(--font-mono); color: var(--text); }
 .metric .m-k { font-size: 12px; color: var(--text-dim); text-transform: lowercase; }
 
-.plan-body { flex: 1; display: flex; gap: 16px; min-height: 0; }
+.plan-body { flex: 1; display: flex; gap: 12px; min-height: 0; }
 
 /* -- list column -- */
 .list-col { width: 230px; flex-shrink: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding-right: 4px; }
