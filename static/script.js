@@ -171,7 +171,6 @@ function renderList() {
     const title = entry.location_label || 'Air Quality Survey';
     const rt = entry.range_info ? entry.range_info.round_trip_miles + ' mi' : '--';
     const cat = aqiCategoryInfo(entry.aqi_before);
-    const dur = entry.duration_seconds != null ? Math.round(entry.duration_seconds / 60) + ' min' : '--';
     card.innerHTML = `
       <div class="mc-thumb" style="background:linear-gradient(135deg, ${cat.color}55, ${cat.color}11)">
         <span class="mc-thumb-aqi">${entry.aqi_before ?? '--'}</span>
@@ -185,7 +184,6 @@ function renderList() {
         <div class="mc-meta">
           <span>#${entry.mission_id}</span>
           <span>${rt}</span>
-          <span>${dur}</span>
           <span>${fmtDate(entry.created)}</span>
         </div>
         <div class="mc-actions">
