@@ -1,115 +1,94 @@
 {% extends "base.html" %}
-{% block title %}DroneX - Operations Console{% endblock %}
-{% block body_attrs %}class="plan-page"{% endblock %}
+{% block title %}DroneX -- Planning{% endblock %}
 {% block content %}
 
 <div class="plan-shell">
 
-  <!-- Toolbar -->
+  <!-- Toolbar: actions first, status second -->
   <div class="plan-toolbar">
     <div class="pt-field" id="locPickerWrap">
+      <label class="pt-label">Location</label>
       <div class="pt-search">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="12" cy="12" r="9"/>
-          <line x1="12" y1="3" x2="12" y2="7"/>
-          <line x1="12" y1="17" x2="12" y2="21"/>
-          <line x1="3" y1="12" x2="7" y2="12"/>
-          <line x1="17" y1="12" x2="21" y2="12"/>
-        </svg>
-        <span class="pt-inline">Location</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
         <select id="address">
           <option value="" disabled selected>Choose a location</option>
           <option value="virginia">Virginia</option>
           <option value="california">California</option>
         </select>
         <button type="button" class="loc-picker-btn" id="locPickerBtn" title="Search, recents & favorites" onclick="openLocPanel()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         </button>
       </div>
       <div class="loc-panel" id="locPanel" style="display:none;">
         <div class="loc-search">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           <input type="text" id="locSearchInput" placeholder="Search locations..." autocomplete="off">
         </div>
         <div class="loc-body"></div>
       </div>
     </div>
     <div class="pt-field">
-      <span class="pt-inline">Radius</span>
+      <label class="pt-label" for="range">Search radius</label>
       <div class="pt-range-wrap">
-        <input type="number" id="range" class="pt-range" placeholder="10" step="0.1" min="0.5" title="Maximum one-way flight radius in miles">
+        <input type="number" id="range" class="pt-range" placeholder="10" step="0.1" min="0.5" title="Maximum one-way flight radius in miles — drones return to home base.">
         <span class="pt-unit">mi</span>
       </div>
     </div>
     <button class="btn-plan-cta disabled" id="planBtn" onclick="planMission()" aria-disabled="true">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-      Plan mission
-      <span class="cta-kbd">&#9166;</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      Plan Mission
+      <span class="cta-kbd">⏎</span>
     </button>
     <div class="pt-status">
-      <div class="instrument-strip">
-        <div class="is-item">
-          <span class="is-label">Drones</span>
-          <span class="is-val" id="mDrones">1</span>
+      <div class="metric-cards">
+        <div class="metric">
+          <span class="m-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2L4 9v6l8 7 8-7V9l-8-7z"/></svg></span>
+          <span class="m-k">Drones</span><span class="m-v" id="mDrones">1</span>
         </div>
-        <div class="is-item">
-          <span class="is-label">Missions</span>
-          <span class="is-val" id="mMissions">0</span>
+        <div class="metric">
+          <span class="m-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 6h14M5 12h14M5 18h9"/></svg></span>
+          <span class="m-k">Missions</span><span class="m-v" id="mMissions">0</span>
         </div>
-        <div class="is-item">
-          <span class="is-label">Candidates</span>
-          <span class="is-val" id="mCandidates">--</span>
+        <div class="metric">
+          <span class="m-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
+          <span class="m-k">Candidates</span><span class="m-v" id="mCandidates">--</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Step indicator: Locate - Configure - Deploy - Active -->
+  <!-- Step indicator (preview style) -->
   <div class="plan-progress" id="planProgress">
-    <div class="pp-phase active" data-phase="1">
-      <span class="pp-lbl">Locate</span>
-      <div class="pp-dot"></div>
-    </div>
-    <div class="pp-track"><div class="pp-fill"></div></div>
-    <div class="pp-phase" data-phase="2">
-      <span class="pp-lbl">Configure</span>
-      <div class="pp-dot"></div>
-    </div>
-    <div class="pp-track"><div class="pp-fill"></div></div>
-    <div class="pp-phase" data-phase="3">
-      <span class="pp-lbl">Deploy</span>
-      <div class="pp-dot"></div>
-    </div>
-    <div class="pp-track"><div class="pp-fill"></div></div>
-    <div class="pp-phase" data-phase="4">
-      <span class="pp-lbl">Active</span>
-      <div class="pp-dot"></div>
-    </div>
+    <div class="pp-step active" data-step="1"><span class="pp-label" data-num="1">Choose location</span></div>
+    <div class="pp-track"><span class="pp-fill"></span></div>
+    <div class="pp-step" data-step="2"><span class="pp-label" data-num="2">Plan mission</span></div>
+    <div class="pp-track"><span class="pp-fill"></span></div>
+    <div class="pp-step" data-step="3"><span class="pp-label" data-num="3">Launch</span></div>
   </div>
 
   <div class="plan-body" id="planBody">
 
-    <!-- Left column: mission list + templates -->
+    <!-- Left column: New Mission + templates + recent -->
     <div class="list-col" id="listCol">
       <button class="new-mission-btn" id="newMissionBtn" onclick="document.getElementById('address').focus()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
-        New mission
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        New Mission
       </button>
 
       <div class="pt-section-title">Quick templates</div>
       <div class="template-list">
         <label class="template-item">
-          <span class="tpl-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="2 12 6 12 9 6 12 18 15 9 18 12 22 12"/></svg></span>
+          <span class="tpl-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12h4l2-4 3 8 2-4h7"/></svg></span>
           <span class="tpl-name">Air quality scan</span>
           <input type="checkbox" class="tpl" value="air">
         </label>
         <label class="template-item">
-          <span class="tpl-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3L3 8.5v7L12 21l9-5.5v-7L12 3z"/></svg></span>
+          <span class="tpl-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z"/></svg></span>
           <span class="tpl-name">Perimeter sweep</span>
           <input type="checkbox" class="tpl" value="perimeter">
         </label>
         <label class="template-item">
-          <span class="tpl-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="3" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="21" y2="12"/></svg></span>
+          <span class="tpl-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></span>
           <span class="tpl-name">Grid survey</span>
           <input type="checkbox" class="tpl" value="grid">
         </label>
@@ -121,36 +100,22 @@
       <div id="missionCards"></div>
       <div class="list-empty" id="listEmpty">
         <div class="empty-illustration">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="9"/>
-            <line x1="12" y1="3" x2="12" y2="7"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-            <line x1="3" y1="12" x2="7" y2="12"/>
-            <line x1="17" y1="12" x2="21" y2="12"/>
-          </svg>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 2L4 9v6l8 7 8-7V9l-8-7z"/><circle cx="12" cy="11" r="2.4"/></svg>
         </div>
         <div class="empty-title">No missions yet</div>
         <div class="empty-sub">Choose a location and create your first flight.</div>
         <button class="empty-cta" onclick="openLocPanel(); document.getElementById('address')?.focus();">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="9"/>
-            <line x1="12" y1="3" x2="12" y2="7"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-          </svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
           Browse example missions
         </button>
       </div>
     </div>
 
-    <!-- Details panel -->
+    <!-- Details panel: hidden until a mission is selected -->
     <div class="detail-col" id="detailCol">
       <div class="detail-empty" id="detailEmpty">
         <div class="empty-illustration">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18"/>
-            <line x1="9" y1="3" x2="9" y2="21"/>
-            <line x1="3" y1="9" x2="9" y2="9"/>
-          </svg>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18M3 9h6"/></svg>
         </div>
         <div class="empty-title">No mission selected</div>
         <div class="empty-sub">Select one from the list, or create a new mission.</div>
@@ -158,11 +123,11 @@
       <div id="detailContent" style="display:none;">
         <div class="d-head">
           <div>
-            <div class="d-title">Mission #<span id="d-id" class="data-val">--</span></div>
-            <span class="status-badge sb-wait" id="d-status"><span class="sb-indicator"></span><span id="d-status-label">--</span></span>
+            <div class="d-title">Mission #<span id="d-id">--</span></div>
+            <span class="status-pill" id="d-status"><span class="dot"></span><span id="d-status-label">--</span></span>
           </div>
           <div class="d-close" onclick="deselectMission()" title="Deselect">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </div>
         </div>
 
@@ -185,35 +150,34 @@
         <div class="route-box">
           <div class="route-info">
             <div class="route-row">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-              <span id="d-drone" class="data-val">DRN-01</span>
-              <span class="telemetry-status"><span class="ts-dot ts-ok"></span> home base</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11a8 8 0 0 1 16 0"/><path d="M7.5 11a4.5 4.5 0 0 1 9 0"/><circle cx="12" cy="11" r="1.4" fill="currentColor" stroke="none"/><path d="M12 12.4V21"/></svg>
+              <span id="d-drone">DRN-01 &middot; home base</span>
             </div>
             <div class="route-row">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M12 4l8 8-8 8"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
               <span id="d-range-badge">-- miles round trip</span>
             </div>
             <div class="route-row">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3L3 8.5v7L12 21l9-5.5v-7L12 3z"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
               <span id="d-airspace-badge">Airspace not checked</span>
             </div>
           </div>
         </div>
 
-        <div class="d-section-title">Target location</div>
+        <div class="d-section-title">Target Location</div>
         <div class="addr-list">
-          <div class="addr-row"><span class="addr-dot"></span><span id="d-home-coords" class="data-val">--</span></div>
-          <div class="addr-row"><span class="addr-dot end"></span><span id="d-target-coords" class="data-val">--</span></div>
+          <div class="addr-row"><span class="addr-dot"></span><span id="d-home-coords">--</span></div>
+          <div class="addr-row"><span class="addr-dot end"></span><span id="d-target-coords">--</span></div>
         </div>
         <div class="mini-map-box">
           <div class="mini-map-label" id="miniMapLabel">--</div>
           <button class="mini-expand-btn" id="miniExpandBtn" title="Focus target on main map">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
           </button>
           <div id="miniMap"></div>
         </div>
 
-        <div style="display:flex; gap:8px; margin-top:12px;">
+        <div style="display:flex; gap:10px; margin-top:14px;">
           <a id="downloadLink" href="#" style="flex:1; display:block;">
             <button class="btn-secondary" style="width:100%;justify-content:center;">Download .plan</button>
           </a>
@@ -222,42 +186,47 @@
       </div>
     </div>
 
-    <!-- Map -->
+    <!-- Map: full width when no mission selected -->
     <div class="map-col" id="mapCol">
       <div id="planMap"></div>
+      <div class="map-grid" id="mapGrid" aria-hidden="true"></div>
       <div class="map-compass" aria-hidden="true">
-        <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
-          <circle cx="20" cy="20" r="16" stroke="var(--line-hairline)" stroke-width="0.75"/>
-          <path d="M20 6 L22 20 L20 34 L18 20 Z" fill="var(--accent)" fill-opacity="0.35"/>
-          <path d="M20 34 L18 20 L22 20 Z" fill="var(--text-tertiary)" fill-opacity="0.15"/>
+        <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="16" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <path d="M20 6 L23 20 L20 34 L17 20 Z" fill="rgba(0,230,184,0.55)"/>
+          <path d="M20 34 L17 20 L23 20 Z" fill="rgba(255,255,255,0.25)"/>
         </svg>
         <span class="compass-n">N</span>
       </div>
       <div class="wind-readout" id="windReadout" aria-hidden="true">
-        <svg class="wind-arrow" id="windArrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v18M12 3l5 5M12 3L7 8"/></svg>
+        <svg class="wind-arrow" id="windArrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M12 3l5 5M12 3L7 8"/></svg>
         <span class="wind-val" id="windVal">-- kt</span>
         <span class="wind-dir" id="windDir">--</span>
       </div>
 
+      <!-- Lightweight coach hint, anchored bottom-left, dismissable -->
       <div class="map-coach" id="mapCoach">
         <span class="coach-pulse"></span>
         <span class="coach-text">Click the map to preview a spot, then choose Virginia or California above to plan the mission.</span>
         <button class="coach-close" onclick="dismissCoach()" title="Dismiss">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
 
       <div class="map-ctrl-group">
         <button class="map-tool-btn" id="recenterBtn" title="Recenter">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="5"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="5"/></svg>
         </button>
         <button class="map-tool-btn" id="expandBtn" title="Fullscreen">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
+        </button>
+        <button class="map-tool-btn" id="locateBtn" title="Locate / recenter on home">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
         </button>
       </div>
       <div id="targetFloatCard" class="target-float-card" style="display:none;">
         <div class="tfc-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3L3 8.5v7L12 21l9-5.5v-7L12 3z"/><path d="M12 12v9M3 8.5L12 12l9-3.5"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7V8z"/><path d="M3.3 6.3L12 11l8.7-4.7M12 11v10"/></svg>
         </div>
         <div>
           <div class="tfc-title" id="tfcTitle">--</div>
@@ -265,12 +234,13 @@
         </div>
       </div>
 
+      <!-- Right-click context menu -->
       <div class="map-context-menu" id="mapContextMenu" style="display:none;">
-        <button class="ctx-item" onclick="ctxAction('pin')"><span class="ctx-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>Drop mission pin</button>
-        <button class="ctx-item" onclick="ctxAction('center')"><span class="ctx-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>Center map here</button>
-        <button class="ctx-item" onclick="ctxAction('home')"><span class="ctx-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>Set as home base</button>
+        <button class="ctx-item" onclick="ctxAction('pin')"><span class="ctx-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg></span>Drop mission pin</button>
+        <button class="ctx-item" onclick="ctxAction('center')"><span class="ctx-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>Center map here</button>
+        <button class="ctx-item" onclick="ctxAction('home')"><span class="ctx-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>Set as home base</button>
         <div class="ctx-sep"></div>
-        <button class="ctx-item" onclick="ctxAction('copy')"><span class="ctx-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="9" width="11" height="11"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span>Copy coordinates</button>
+        <button class="ctx-item" onclick="ctxAction('copy')"><span class="ctx-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span>Copy coordinates</button>
       </div>
     </div>
 

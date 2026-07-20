@@ -1,14 +1,14 @@
-/* DroneX — flight operations console.
-   Single accent hue (#E8A33D). Monospace on data only. No ambient animation. */
+/* DroneX -- planning page: mission list (left) / mission detail (middle) /
+   live map (right), matching the fleet-planning UI reference. */
 
 let planMap, miniMap;
 let homeMarker, candidateMarkers = [], routeLine, droneMarker;
 let missionsCache = [];
-let richDataById = {};
+let richDataById = {};      // mission_id -> full /api/plan_mission response, cached for this session
 let selectedMissionId = null;
 let selectedEntry = null;
-let droneHome = { lat: 35.7796, lon: -78.6382 };
-let userRangeOverride = null;
+let droneHome = { lat: 35.7796, lon: -78.6382 }; // overwritten once a plan response gives the real home
+let userRangeOverride = null; // miles, from settings
 
 const SETTINGS_KEY = 'dronex_settings';
 
@@ -59,13 +59,13 @@ function resetSettings() {
 // ---------------- helpers ----------------
 
 function aqiColor(aqi) {
-  if (aqi === null || aqi === undefined) return '#55585F';
-  if (aqi <= 50) return '#8A8D93';
-  if (aqi <= 100) return '#E8A33D';
-  if (aqi <= 150) return '#C9A227';
-  if (aqi <= 200) return '#B8493B';
-  if (aqi <= 300) return '#B8493B';
-  return '#B8493B';
+  if (aqi === null || aqi === undefined) return '#948da3';
+  if (aqi <= 50) return '#57d38c';
+  if (aqi <= 100) return '#b45cff';
+  if (aqi <= 150) return '#f6a94a';
+  if (aqi <= 200) return '#ff6b81';
+  if (aqi <= 300) return '#c24fd6';
+  return '#8b1a1a';
 }
 
 function divIcon(html, size) {
@@ -82,56 +82,42 @@ function toast(msg, type = 'info', timeout = 6000) {
   el.className = `toast ${type}`;
   el.innerHTML = `<span class="t-dot"></span><span class="t-msg"></span><button class="t-close" aria-label="Dismiss">&times;</button>`;
   el.querySelector('.t-msg').textContent = msg;
-  const close = () => { el.classList.add('leaving'); setTimeout(() => el.remove(), 120); };
+  const close = () => { el.classList.add('leaving'); setTimeout(() => el.remove(), 200); };
   el.querySelector('.t-close').onclick = close;
   stack.appendChild(el);
   if (timeout) setTimeout(close, timeout);
 }
-
 function aqiCategoryInfo(aqi) {
-  if (aqi === null || aqi === undefined) return { label: 'Unknown', color: '#55585F', badge: 'sb-wait' };
-  if (aqi <= 50) return { label: 'Good', color: '#8A8D93', badge: 'sb-ok' };
-  if (aqi <= 100) return { label: 'Moderate', color: '#E8A33D', badge: 'sb-active' };
-  if (aqi <= 150) return { label: 'USG', color: '#C9A227', badge: 'sb-wait' };
-  if (aqi <= 200) return { label: 'Unhealthy', color: '#B8493B', badge: 'sb-fail' };
-  if (aqi <= 300) return { label: 'Very USG', color: '#B8493B', badge: 'sb-fail' };
-  return { label: 'Hazardous', color: '#B8493B', badge: 'sb-fail' };
+  if (aqi === null || aqi === undefined) return { label: 'Unknown', color: '#948da3' };
+  if (aqi <= 50) return { label: 'Good', color: '#57d38c' };
+  if (aqi <= 100) return { label: 'Moderate', color: '#b45cff' };
+  if (aqi <= 150) return { label: 'Unhealthy (Sensitive)', color: '#f6a94a' };
+  if (aqi <= 200) return { label: 'Unhealthy', color: '#ff6b81' };
+  if (aqi <= 300) return { label: 'Very Unhealthy', color: '#c24fd6' };
+  return { label: 'Hazardous', color: '#8b1a1a' };
 }
 
 function fmtDate(iso) {
-  if (!iso) return 'No date';
-  const clean = String(iso).replace(/\.\d+/, '');
-  const d = new Date(clean);
-  if (isNaN(d.getTime())) return 'No date';
-  let time = '';
-  const t = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-  if (t && t !== 'Invalid Date') time = t + ' \u00b7 ';
-  const date = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  return time + date;
+  if (!iso) return '--';
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function statusFor(entry) {
   if (entry.aqi_after !== null && entry.aqi_after !== undefined) {
-    return { cls: 'complete', label: 'Complete', sbCls: 'sb-ok' };
+    return { cls: 'complete', label: 'Complete' };
   }
   if (window.__latestTelemetry && window.__latestTelemetry.mission_id === entry.mission_id) {
-    return { cls: 'transit', label: 'In flight', sbCls: 'sb-active' };
+    return { cls: 'transit', label: 'In Flight' };
   }
-  return { cls: 'awaiting', label: 'Awaiting', sbCls: 'sb-wait' };
+  return { cls: 'awaiting', label: 'Awaiting' };
 }
 
-// ---------------- header / toolbar ----------------
+// ---------------- header title / toolbar ----------------
 
 function updateHeader() {
-  const last = missionsCache[missionsCache.length - 1];
-  let candidateCount = 'N/A';
-  if (last) {
-    const rich = richDataById[last.mission_id];
-    if (rich && Array.isArray(rich.candidates)) candidateCount = rich.candidates.length;
-    else if (typeof last.num_candidates === 'number') candidateCount = last.num_candidates;
-  } else {
-    candidateCount = '--';
-  }
+  const lastRich = richDataById[missionsCache[missionsCache.length - 1]?.mission_id];
+  const candidateCount = lastRich ? lastRich.candidates.length : (missionsCache.length ? '--' : '--');
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set('mDrones', '1');
   set('mMissions', missionsCache.length);
@@ -168,34 +154,24 @@ function renderList() {
     card.onclick = () => selectMission(entry.mission_id);
     card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectMission(entry.mission_id); } };
     const locText = (entry.address_resolved || entry.address || 'Unknown address');
-    const title = entry.location_label || 'Air quality survey';
+    const title = entry.location_label || 'Air Quality Survey';
     const rt = entry.range_info ? entry.range_info.round_trip_miles + ' mi' : '--';
     const cat = aqiCategoryInfo(entry.aqi_before);
-    const aqiVal = entry.aqi_before ?? 0;
-    const circ = 100.53;
-    const offset = circ * (1 - Math.min(aqiVal / 300, 1));
+    const dur = entry.duration_seconds != null ? Math.round(entry.duration_seconds / 60) + ' min' : '--';
     card.innerHTML = `
-      <div class="mc-gauge">
-        <div class="mc-gauge-ring">
-          <svg viewBox="0 0 36 36">
-            <circle class="gauge-bg" cx="18" cy="18" r="16"/>
-            <circle class="gauge-fill" cx="18" cy="18" r="16" style="--circ:${circ};--offset:${offset};stroke:${cat.color}"/>
-          </svg>
-          <span class="mc-gauge-val">${aqiVal}</span>
-        </div>
-        <div class="mc-gauge-info">
-          <div class="mc-gauge-cat" style="color:${cat.color}">${cat.label}</div>
-          <div class="mc-loc" title="${locText}">${locText}</div>
-        </div>
+      <div class="mc-thumb" style="background:linear-gradient(135deg, ${cat.color}55, ${cat.color}11)">
+        <span class="mc-thumb-aqi">${entry.aqi_before ?? '--'}</span>
       </div>
       <div class="mc-body">
         <div class="mc-top">
           <span class="mc-title">${title}</span>
-          <span class="status-badge ${status.sbCls}"><span class="sb-indicator"></span>${status.label}</span>
+          <span class="status-pill ${status.cls}"><span class="dot"></span>${status.label}</span>
         </div>
+        <div class="mc-loc" title="${locText}">${locText}</div>
         <div class="mc-meta">
-          <span class="data-val">#${entry.mission_id}</span>
-          <span class="data-val">${rt}</span>
+          <span>#${entry.mission_id}</span>
+          <span>${rt}</span>
+          <span>${dur}</span>
           <span>${fmtDate(entry.created)}</span>
         </div>
         <div class="mc-actions">
@@ -219,11 +195,12 @@ function initPlanMap() {
     subdomains: 'abcd',
     maxZoom: 20,
   }).addTo(planMap);
+  // separate labels layer so we can add a halo for legibility (raster basemap can't be styled per-label)
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
     subdomains: 'abcd', maxZoom: 20, pane: 'labelPane',
   }).addTo(planMap);
   homeMarker = L.marker([droneHome.lat, droneHome.lon], {
-    icon: divIcon('<div class="home-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></div>', 30),
+    icon: divIcon('<div class="home-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></div>', 30),
   }).addTo(planMap).bindPopup('Home base');
   drawRangeRing();
   drawNoFlyZones();
@@ -238,6 +215,7 @@ function initPlanMap() {
   setupTemplateDnd();
 }
 
+// Static no-fly zones near the default home base (ambient mission-control context)
 let noFlyLayer = null;
 function drawNoFlyZones() {
   if (!planMap) return;
@@ -250,12 +228,13 @@ function drawNoFlyZones() {
   ];
   zones.forEach(z => {
     L.circle([z.lat, z.lon], {
-      radius: z.r, color: 'rgba(184,73,59,0.3)', weight: 1,
-      fillColor: '#B8493B', fillOpacity: 0.03, dashArray: '4 6', interactive: true,
+      radius: z.r, color: 'rgba(255,107,129,0.4)', weight: 1,
+      fillColor: '#ff6b81', fillOpacity: 0.05, dashArray: '4 6', interactive: true,
     }).addTo(noFlyLayer).bindTooltip(z.label, { className: 'nfz-tip', direction: 'top' });
   });
 }
 
+// Faint completed flight paths from history (ambient "we've flown here before")
 let historyLayer = null;
 function drawFlightHistory() {
   if (!planMap) return;
@@ -265,21 +244,22 @@ function drawFlightHistory() {
     if (m.mission_id === selectedMissionId) return;
     if (!m.target || m.target.lat == null) return;
     L.polyline([[droneHome.lat, droneHome.lon], [m.target.lat, m.target.lon]], {
-      color: 'rgba(138,141,147,0.12)', weight: 1, dashArray: '1 6', interactive: false,
+      color: 'rgba(255,255,255,0.16)', weight: 1, dashArray: '1 6', interactive: false,
     }).addTo(historyLayer);
     L.circleMarker([m.target.lat, m.target.lon], {
-      radius: 2.5, color: 'rgba(138,141,147,0.3)', weight: 1, fillOpacity: 0.3, interactive: false,
+      radius: 2.5, color: 'rgba(255,255,255,0.35)', weight: 1, fillOpacity: 0.4, interactive: false,
     }).addTo(historyLayer);
   });
 }
 
+// Hover pin preview while planning (idle map only)
 let hoverPreview = null;
 function onMapHover(e) {
   if (selectedMissionId) { if (hoverPreview) { planMap.removeLayer(hoverPreview); hoverPreview = null; } return; }
   const { lat, lng } = e.latlng;
   if (!hoverPreview) {
     hoverPreview = L.marker([lat, lng], {
-      icon: divIcon('<div class="drop-pin"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>', 28),
+      icon: divIcon('<div class="pin-preview"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg></div>', 28),
       interactive: false, keyboard: false,
     }).addTo(planMap);
   } else {
@@ -291,17 +271,17 @@ let dropMarker = null;
 let userInteracted = false;
 
 function onMapClick(e) {
-  if (selectedMissionId) return;
+  if (selectedMissionId) return; // don't drop pins while viewing a mission
   const { lat, lng } = e.latlng;
   if (dropMarker) planMap.removeLayer(dropMarker);
   dropMarker = L.marker([lat, lng], {
-    icon: divIcon('<div class="drop-pin"><span class="drop-pulse"></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>', 34),
+    icon: divIcon('<div class="drop-pin"><span class="drop-pulse"></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg></div>', 34),
     zIndexOffset: 1000,
   }).addTo(planMap);
   dropMarker._icon?.querySelector('.drop-pin')?.classList.add('dropped');
   markInteracted();
   updatePlanBtn();
-  toast('This is a preview marker \u2014 choose Virginia or California above to plan the mission.', 'info');
+  toast('This is a preview marker — choose Virginia or California above to plan a mission.', 'info');
 }
 
 function markInteracted() {
@@ -317,23 +297,22 @@ function dismissCoach() {
   if (coach) coach.classList.remove('show');
 }
 
-// Step indicator: phases 1-4, dots ON the track
 function setStepper(step) {
-  document.querySelectorAll('.plan-progress .pp-phase').forEach(el => {
-    const s = parseInt(el.getAttribute('data-phase'), 10);
+  document.querySelectorAll('.plan-progress .pp-step').forEach(el => {
+    const s = parseInt(el.getAttribute('data-step'), 10);
     el.classList.toggle('active', s === step);
     el.classList.toggle('done', s < step);
   });
-  document.querySelectorAll('.plan-progress .pp-track').forEach((track, i) => {
-    const phaseBefore = i + 1;
-    const fill = track.querySelector('.pp-fill');
-    if (fill) {
-      fill.style.width = phaseBefore < step ? '100%' : '0%';
-    }
-    track.classList.toggle('done', phaseBefore < step);
+  const steps = Array.from(document.querySelectorAll('.plan-progress .pp-step'));
+  const tracks = Array.from(document.querySelectorAll('.plan-progress .pp-track'));
+  tracks.forEach((t, i) => {
+    const prev = steps[i];
+    const prevStep = prev ? parseInt(prev.getAttribute('data-step'), 10) : 0;
+    t.classList.toggle('done', prevStep < step);
   });
 }
 
+// Reposition the target float card as the map pans/zooms
 function positionFloatCard() {
   const card = document.getElementById('targetFloatCard');
   if (!card || card.style.display === 'none' || !planMap) return;
@@ -344,7 +323,7 @@ function positionFloatCard() {
   card.style.top = Math.max(pt.y - 70, 10) + 'px';
 }
 
-// ---------------- map context menu ----------------
+// ---------------- map right-click context menu ----------------
 
 let ctxLatLng = null;
 
@@ -389,7 +368,7 @@ function ctxAction(action) {
   }
 }
 
-// ---------------- drag templates ----------------
+// ---------------- drag templates onto the map ----------------
 
 let dragTemplate = null;
 
@@ -423,12 +402,12 @@ function setupTemplateDnd() {
     }
     onMapClick({ latlng });
     const name = tpl ? tpl.replace(/^\w/, c => c.toUpperCase()) : 'Mission';
-    toast(`${name} template dropped \u2014 pick a location, then Plan mission.`, 'info');
+    toast(`${name} template dropped — pick a location, then Plan Mission.`, 'info');
     dragTemplate = null;
   });
 }
 
-// ---------------- location picker ----------------
+// ---------------- location search: recents + favorites ----------------
 
 const LOC_KEY = 'dronex_locations';
 const LOCATIONS = [
@@ -501,14 +480,14 @@ function renderLocPanel(filter = '') {
 
   const row = (l, tag) => `
     <div class="loc-row" onclick="chooseLocation('${l.value}')">
-      <span class="loc-star ${favs.includes(l.value) ? 'on' : ''}" title="Favorite" onclick="toggleFavorite('${l.value}', event)">${favs.includes(l.value) ? '\u2605' : '\u2606'}</span>
+      <span class="loc-star ${favs.includes(l.value) ? 'on' : ''}" title="Favorite" onclick="toggleFavorite('${l.value}', event)">${favs.includes(l.value) ? '★' : '☆'}</span>
       <span class="loc-name">${l.label}</span>
       ${tag ? `<span class="loc-tag">${tag}</span>` : ''}
     </div>`;
 
   let html = '';
   if (!f && favs.length) {
-    html += `<div class="loc-group">Favorites</div>` + favs.map(v => LOCATIONS.find(l => l.value === v)).filter(Boolean).map(l => row(l, '\u2605')).join('');
+    html += `<div class="loc-group">Favorites</div>` + favs.map(v => LOCATIONS.find(l => l.value === v)).filter(Boolean).map(l => row(l, '★')).join('');
   }
   if (!f && recents.length) {
     html += `<div class="loc-group">Recent</div>` + recents.map(v => LOCATIONS.find(l => l.value === v)).filter(Boolean).map(l => row(l, 'recent')).join('');
@@ -528,14 +507,15 @@ function clearMissionLayers() {
 function plotMissionOnMap(entry, rich) {
   initPlanMap();
   clearMissionLayers();
+
   const targetLat = entry.target.lat, targetLon = entry.target.lon;
 
   if (rich) {
     rich.candidates.forEach(c => {
       const isChosen = c.lat === rich.chosen.lat && c.lon === rich.chosen.lon;
       const html = isChosen
-        ? '<div class="package-marker chosen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3L3 8.5v7L12 21l9-5.5v-7L12 3z"/></svg></div>'
-        : '<div class="package-marker"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3L3 8.5v7L12 21l9-5.5v-7L12 3z"/></svg></div>';
+        ? '<div class="package-marker chosen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7V8z"/></svg></div>'
+        : '<div class="package-marker"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7V8z"/></svg></div>';
       const marker = L.marker([c.lat, c.lon], { icon: divIcon(html, 30) })
         .addTo(planMap)
         .bindPopup(`AQI ${c.worst_aqi} (${c.worst_param})<br>${c.distance_miles} mi from address`);
@@ -544,7 +524,7 @@ function plotMissionOnMap(entry, rich) {
   }
 
   routeLine = L.polyline([[droneHome.lat, droneHome.lon], [targetLat, targetLon]], {
-    color: '#E8A33D', weight: 1.5, opacity: 0.7, dashArray: '2 8',
+    color: '#c265ff', weight: 3, opacity: 0.85, dashArray: '2 8',
   }).addTo(planMap);
 
   const bounds = L.latLngBounds([[droneHome.lat, droneHome.lon], [targetLat, targetLon]]);
@@ -554,6 +534,7 @@ function plotMissionOnMap(entry, rich) {
   card.style.display = 'flex';
   document.getElementById('tfcTitle').textContent = '#' + entry.mission_id;
   document.getElementById('tfcSub').textContent = `${entry.aqi_param || 'AQI'} \u00b7 ${entry.aqi_before ?? '--'}`;
+  // position the float card near the target point on screen
   const pt = planMap.latLngToContainerPoint([targetLat, targetLon]);
   card.style.left = Math.min(Math.max(pt.x - 90, 10), planMap.getSize().x - 210) + 'px';
   card.style.top = Math.max(pt.y - 70, 10) + 'px';
@@ -566,17 +547,11 @@ function drawRangeRing() {
   if (!planMap) return;
   if (rangeRing) { planMap.removeLayer(rangeRing); rangeRing = null; }
   const miles = userRangeOverride != null ? userRangeOverride : 3;
-  const meters = (miles / 2) * 1609.34;
+  const meters = (miles / 2) * 1609.34; // one-way radius from a round-trip budget
   rangeRing = L.circle([droneHome.lat, droneHome.lon], {
     radius: meters,
-    color: 'rgba(232,163,61,0.18)', weight: 1, fillColor: 'transparent',
+    color: 'rgba(94,106,210,0.4)', weight: 1, fillColor: 'rgba(94,106,210,1)', fillOpacity: 0.04,
     dashArray: '3 7', interactive: false,
-  }).addTo(planMap);
-  // Solid boundary ring
-  L.circle([droneHome.lat, droneHome.lon], {
-    radius: meters,
-    color: 'rgba(232,163,61,0.25)', weight: 1, fillColor: 'transparent',
-    interactive: false,
   }).addTo(planMap);
 }
 
@@ -586,7 +561,7 @@ function placeDroneMarker() {
   if (droneMarker) { planMap.removeLayer(droneMarker); droneMarker = null; }
   if (t && t.lat && t.lon && t.mission_id === selectedMissionId) {
     droneMarker = L.marker([t.lat, t.lon], {
-      icon: divIcon('<div class="drone-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3L3 8.5v7L12 21l9-5.5v-7L12 3z"/></svg></div>', 34),
+      icon: divIcon('<div class="drone-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L4 9v6l8 7 8-7V9l-8-7z"/></svg></div>', 34),
     }).addTo(planMap).bindPopup('Live position');
   }
 }
@@ -627,7 +602,7 @@ function showDetailPanel(show) {
     col.style.display = 'none';
     empty.style.display = 'flex';
     content.style.display = 'none';
-    if (mapCol) { mapCol.classList.add('full'); mapCol.classList.remove('has-mission'); }
+    if (mapCol) { mapCol.classList.add('full'); mapCol.classList.remove('has-mission'); } // expand map when nothing selected
   }
 }
 
@@ -637,8 +612,8 @@ function renderDetail(entry, rich) {
 
   const status = statusFor(entry);
   document.getElementById('d-id').textContent = entry.mission_id;
-  const statusBadge = document.getElementById('d-status');
-  statusBadge.className = 'status-badge ' + status.sbCls;
+  const statusPill = document.getElementById('d-status');
+  statusPill.className = 'status-pill ' + status.cls;
   document.getElementById('d-status-label').textContent = status.label;
 
   document.getElementById('d-address').textContent = (entry.address_resolved || entry.address || '--').slice(0, 60);
@@ -647,25 +622,25 @@ function renderDetail(entry, rich) {
   const aqiVal = entry.aqi_before !== null && entry.aqi_before !== undefined ? entry.aqi_before : null;
   const cat = aqiCategoryInfo(aqiVal);
   document.getElementById('d-aqi').innerHTML = aqiVal !== null
-    ? `<span class="data-val" style="color:${cat.color};font-weight:600">${aqiVal}</span> <span class="status-badge ${cat.badge}"><span class="sb-indicator"></span>${cat.label}</span>`
+    ? `${aqiVal} <span class="aqi-pill" style="background:${cat.color}22; color:${cat.color}"><span class="dot" style="background:${cat.color}"></span>${cat.label}</span>`
     : '--';
 
   renderCandidateBars(rich);
 
-  document.getElementById('d-drone').textContent = `DRN-01`;
+  document.getElementById('d-drone').textContent = `DRN-01 \u00b7 home base`;
 
   const r = entry.range_info;
   document.getElementById('d-range-badge').innerHTML = r
-    ? `<span class="data-val">${r.round_trip_miles} mi round trip</span> \u00b7 <span style="color:${r.in_range ? '#8A8D93' : '#B8493B'}">${r.in_range ? 'in range' : 'out of range'}</span>`
+    ? `${r.round_trip_miles} mi round trip \u00b7 <span style="color:${r.in_range ? 'var(--green)' : 'var(--red)'}">${r.in_range ? 'in range' : 'out of range'}</span>`
     : 'not calculated';
 
   const a = rich ? rich.airspace : null;
   document.getElementById('d-airspace-badge').innerHTML = a
-    ? (a.warning ? `<span style="color:#E8A33D">${a.checked ? 'Airspace flagged' : 'Airspace unverified'}</span>` : `<span style="color:#8A8D93">Airspace clear</span>`)
+    ? (a.warning ? `<span style="color:var(--amber)">${a.checked ? 'Airspace flagged' : 'Airspace unverified'}</span>` : `<span style="color:var(--green)">Airspace clear</span>`)
     : 'Only checked for missions planned this session';
 
-  document.getElementById('d-home-coords').textContent = `${droneHome.lat.toFixed(4)}, ${droneHome.lon.toFixed(4)}`;
-  document.getElementById('d-target-coords').textContent = `${entry.target.lat.toFixed(4)}, ${entry.target.lon.toFixed(4)}`;
+  document.getElementById('d-home-coords').textContent = `Home base \u00b7 ${droneHome.lat.toFixed(4)}, ${droneHome.lon.toFixed(4)}`;
+  document.getElementById('d-target-coords').textContent = `Target \u00b7 ${entry.target.lat.toFixed(4)}, ${entry.target.lon.toFixed(4)}`;
   document.getElementById('miniMapLabel').textContent = (entry.address_resolved || entry.address || 'Target').slice(0, 28);
 
   document.getElementById('downloadLink').href = `/api/plan/${entry.mission_id}`;
@@ -678,7 +653,7 @@ function renderMiniMap(lat, lon) {
   if (miniMap) { miniMap.remove(); miniMap = null; }
   miniMap = L.map('miniMap', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false }).setView([lat, lon], 14);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20 }).addTo(miniMap);
-  L.marker([lat, lon], { icon: divIcon('<div class="package-marker chosen"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3L3 8.5v7L12 21l9-5.5v-7L12 3z"/></svg></div>', 28) }).addTo(miniMap);
+  L.marker([lat, lon], { icon: divIcon('<div class="package-marker chosen"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/></svg></div>', 28) }).addTo(miniMap);
 }
 
 function renderCandidateBars(rich) {
@@ -695,9 +670,9 @@ function renderCandidateBars(rich) {
     const isChosen = c.lat === rich.chosen.lat && c.lon === rich.chosen.lon;
     return `
       <div class="cbar ${isChosen ? 'chosen' : ''}">
-        <div class="cbar-top"><span>${isChosen ? '\u2605 Chosen' : 'Cand. ' + (i + 1)}</span><b style="color:${cat.color}">${c.worst_aqi}</b></div>
+        <div class="cbar-top"><span>${isChosen ? '★ Chosen' : 'Cand. ' + (i + 1)}</span><b style="color:${cat.color}">${c.worst_aqi}</b></div>
         <div class="cbar-track"><div class="cbar-fill" style="width:${pct}%; background:${cat.color}"></div></div>
-        <div class="cbar-sub">${c.worst_param || 'AQI'} \u00b7 ${c.distance_miles} mi</div>
+        <div class="cbar-sub">${c.worst_param || 'AQI'} · ${c.distance_miles} mi</div>
       </div>`;
   }).join('');
 }
@@ -705,7 +680,7 @@ function renderCandidateBars(rich) {
 async function loadTrend(lat, lon) {
   const box = document.getElementById('trendChart');
   if (!box) return;
-  box.innerHTML = '<div class="dim" style="height:90px;width:100%;display:flex;align-items:center;justify-content:center;">Loading...</div>';
+  box.innerHTML = '<div class="skeleton" style="height:90px;width:100%"></div>';
   try {
     const res = await fetch(`/api/trend?lat=${lat}&lon=${lon}&hours=12`);
     const data = await res.json();
@@ -714,7 +689,7 @@ async function loadTrend(lat, lon) {
     const max = Math.max(...pts.map(p => p.aqi), 1);
     const bars = pts.map(p => {
       const cat = aqiCategoryInfo(p.aqi);
-      const h = Math.max(3, Math.round((p.aqi / max) * 80));
+      const h = Math.max(6, Math.round((p.aqi / max) * 80));
       return `<div class="tbar" title="${p.aqi} AQI" style="height:${h}px;background:${cat.color}"></div>`;
     }).join('');
     box.innerHTML = `<div class="trend-bars">${bars}</div><div class="trend-axis"><span>-12h</span><span>now</span></div>`;
@@ -734,13 +709,14 @@ function copyMissionJson() {
     .catch(() => showError('Could not copy to clipboard.'));
 }
 
-// ---------------- plan mission ----------------
+// ---------------- plan a new mission ----------------
 
+// Plan button stays disabled (greyed) until a location is chosen (step 1)
 function updatePlanBtn() {
   const btn = document.getElementById('planBtn');
   if (!btn) return;
   const loc = document.getElementById('address')?.value;
-  const armed = !!loc;
+  const armed = !!loc; // dropMarker is a map preview only — planning is limited to the allowed locations below
   btn.classList.toggle('disabled', !armed);
   btn.setAttribute('aria-disabled', armed ? 'false' : 'true');
 }
@@ -766,7 +742,7 @@ async function planMission() {
     const data = await res.json();
     if (!res.ok) { showError(data.error || 'Something went wrong.'); return; }
 
-    toast(`Mission #${data.mission_id} planned \u2014 target AQI ${data.chosen.worst_aqi}.`, 'success');
+    toast(`Mission #${data.mission_id} planned — target AQI ${data.chosen.worst_aqi}.`, 'success');
     pushRecent(location);
     markInteracted();
     if (dropMarker) { planMap.removeLayer(dropMarker); dropMarker = null; }
@@ -787,7 +763,7 @@ function exportSelected() {
   window.open(`/api/plan/${selectedMissionId}`, '_blank');
 }
 
-// ---------------- history / telemetry ----------------
+// ---------------- history / telemetry polling ----------------
 
 async function refreshHistory() {
   try {
@@ -809,7 +785,7 @@ async function pollTelemetry() {
   } catch (e) { /* ignore */ }
 }
 
-// ---------------- map toolbar ----------------
+// ---------------- map toolbar buttons ----------------
 
 document.getElementById('recenterBtn')?.addEventListener('click', () => {
   if (!planMap) return;
@@ -839,19 +815,14 @@ document.getElementById('locateBtn')?.addEventListener('click', () => {
   if (dropMarker) { planMap.removeLayer(dropMarker); dropMarker = null; }
 });
 
-document.getElementById('miniExpandBtn')?.addEventListener('click', () => {
-  if (!planMap) return;
-  const entry = missionsCache.find(m => m.mission_id === selectedMissionId);
-  if (entry && entry.target) planMap.flyTo([entry.target.lat, entry.target.lon], 15, { duration: 0.5 });
-});
-
+// Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
   if (e.target.matches('input, select, textarea')) return;
   if (e.key === 'n' || e.key === 'N') { e.preventDefault(); document.getElementById('address')?.focus(); markInteracted(); }
-  if (e.key === 'l' || e.key === 'L') { if (selectedMissionId) toast('Mission already planned \u2014 launch from the drone.', 'info'); }
+  if (e.key === 'l' || e.key === 'L') { /* launch = plan current selection if set */ if (selectedMissionId) toast('Mission already planned — launch from the drone.', 'info'); }
 });
 
-// ---------------- wind indicator ----------------
+// ---------------- wind indicator (subtle ambient telemetry) ----------------
 
 const WIND_DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 function updateWind() {
@@ -860,8 +831,8 @@ function updateWind() {
   const dir = document.getElementById('windDir');
   if (!arrow) return;
   const t = Date.now() / 1000;
-  const baseDeg = 210 + Math.sin(t / 40) * 30;
-  const speed = 6 + Math.abs(Math.sin(t / 25)) * 5;
+  const baseDeg = 210 + Math.sin(t / 40) * 30;           // slow shifting heading
+  const speed = 6 + Math.abs(Math.sin(t / 25)) * 5;       // 6-11 kt gentle breeze
   arrow.style.transform = `rotate(${baseDeg}deg)`;
   val.textContent = speed.toFixed(0) + ' kt';
   dir.textContent = WIND_DIRS[Math.round(((baseDeg % 360) / 45)) % 8];
@@ -877,8 +848,9 @@ setInterval(updateWind, 5000);
 updatePlanBtn();
 if (homeMarker) homeMarker.setLatLng([droneHome.lat, droneHome.lon]);
 refreshHistory();
-showDetailPanel(false);
+showDetailPanel(false); // hidden until a mission is selected
 
+// Keyboard shortcut: Enter in location/radius plans a mission
 ['address', 'range'].forEach(id => {
   document.getElementById(id)?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); planMission(); }
@@ -889,6 +861,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { closeSettings(); hideLocPanel(); hideContextMenu(); }
 });
 
+// Location search wiring
 document.getElementById('address')?.addEventListener('change', () => { if (document.getElementById('address').value) { markInteracted(); setStepper(2); } updatePlanBtn(); });
 document.getElementById('locSearchInput')?.addEventListener('input', (e) => renderLocPanel(e.target.value));
 document.getElementById('locSearchInput')?.addEventListener('keydown', (e) => {
@@ -897,6 +870,7 @@ document.getElementById('locSearchInput')?.addEventListener('keydown', (e) => {
     first?.click();
   }
 });
+// Close popovers when clicking outside
 document.addEventListener('click', (e) => {
   if (!e.target.closest('#locPickerWrap')) hideLocPanel();
   if (!e.target.closest('#mapContextMenu') && !e.target.closest('#planMap')) hideContextMenu();
