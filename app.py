@@ -143,6 +143,7 @@ def plan_mission():
         "aqi_param": chosen["worst_param"],
         "aqi_after": None,  # filled in later from telemetry, if you wire that up
         "range_info": range_info,
+        "num_candidates": len(result["candidates"]),
         "duration_seconds": None,
     }
     log.append(entry)

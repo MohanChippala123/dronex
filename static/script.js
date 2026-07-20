@@ -98,9 +98,16 @@ function aqiCategoryInfo(aqi) {
 }
 
 function fmtDate(iso) {
-  if (!iso) return '--';
-  const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  if (!iso) return 'No date';
+  // strip fractional seconds (e.g. .391989+00:00) which some engines reject
+  const clean = String(iso).replace(/\.\d+/, '');
+  const d = new Date(clean);
+  if (isNaN(d.getTime())) return 'No date';
+  let time = '';
+  const t = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  if (t && t !== 'Invalid Date') time = t + ' · ';
+  const date = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return time + date;
 }
 
 function statusFor(entry) {
@@ -116,8 +123,15 @@ function statusFor(entry) {
 // ---------------- header title / toolbar ----------------
 
 function updateHeader() {
-  const lastRich = richDataById[missionsCache[missionsCache.length - 1]?.mission_id];
-  const candidateCount = lastRich ? lastRich.candidates.length : (missionsCache.length ? '--' : '--');
+  const last = missionsCache[missionsCache.length - 1];
+  let candidateCount = 'N/A';
+  if (last) {
+    const rich = richDataById[last.mission_id];
+    if (rich && Array.isArray(rich.candidates)) candidateCount = rich.candidates.length;
+    else if (typeof last.num_candidates === 'number') candidateCount = last.num_candidates;
+  } else {
+    candidateCount = '--';
+  }
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set('mDrones', '1');
   set('mMissions', missionsCache.length);
