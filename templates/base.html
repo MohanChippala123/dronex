@@ -9,78 +9,104 @@
 </head>
 <body {% block body_attrs %}{% endblock %}>
 
-<nav class="sidebar">
-  <div class="side-logo">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path d="M12 3L3 8.5v7L12 21l9-5.5v-7L12 3z" stroke="#E8A33D" stroke-width="1.5" fill="none"/>
-      <circle cx="12" cy="12" r="2.5" stroke="#E8A33D" stroke-width="1.5" fill="none"/>
-      <line x1="12" y1="6" x2="12" y2="9.5" stroke="#E8A33D" stroke-width="1.5"/>
-      <line x1="12" y1="14.5" x2="12" y2="18" stroke="#E8A33D" stroke-width="1.5"/>
-      <line x1="6.5" y1="9" x2="9.5" y2="10.5" stroke="#E8A33D" stroke-width="1.5"/>
-      <line x1="14.5" y1="13.5" x2="17.5" y2="15" stroke="#E8A33D" stroke-width="1.5"/>
-    </svg>
-  </div>
-  <a href="/" class="side-icon {{ 'active' if active=='plan' else '' }}" title="Plan a mission">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="12" cy="12" r="9"/>
-      <line x1="12" y1="3" x2="12" y2="7"/>
-      <line x1="12" y1="17" x2="12" y2="21"/>
-      <line x1="3" y1="12" x2="7" y2="12"/>
-      <line x1="17" y1="12" x2="21" y2="12"/>
-      <circle cx="12" cy="12" r="1.5"/>
-    </svg>
-  </a>
-  <a href="/dashboard" class="side-icon {{ 'active' if active=='live' else '' }}" title="Live telemetry">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <polyline points="2 12 6 12 9 6 12 18 15 9 18 12 22 12"/>
-    </svg>
-  </a>
-  <a href="/history" class="side-icon {{ 'active' if active=='log' else '' }}" title="Flight log">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <line x1="3" y1="5" x2="21" y2="5"/>
-      <line x1="3" y1="9" x2="21" y2="9"/>
-      <line x1="3" y1="13" x2="15" y2="13"/>
-      <line x1="3" y1="17" x2="11" y2="17"/>
-    </svg>
-  </a>
-  <div class="side-spacer"></div>
-  <a href="#" class="side-icon" title="Settings" onclick="openSettings(); return false;">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-    </svg>
-  </a>
-  <div class="side-avatar"></div>
-</nav>
-
-<div class="topbar-global">
-  <div class="tb-left">
-    <div class="tb-brand">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <path d="M12 3L3 8.5v7L12 21l9-5.5v-7L12 3z" stroke="#E8A33D" stroke-width="1.5" fill="none"/>
-        <circle cx="12" cy="12" r="2.5" stroke="#E8A33D" stroke-width="1.5" fill="none"/>
-        <line x1="12" y1="6" x2="12" y2="9.5" stroke="#E8A33D" stroke-width="1.5"/>
-        <line x1="12" y1="14.5" x2="12" y2="18" stroke="#E8A33D" stroke-width="1.5"/>
+<div class="app-layout">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
       </svg>
-      <span class="tb-name">DroneX</span>
     </div>
-    <span class="tb-sep"></span>
-    <div class="tb-sub">
-      <span class="tb-mission">Air quality response</span>
-    </div>
-  </div>
-  <div class="fill"></div>
-  <div class="tb-status-cluster">
-    <span class="tb-pill ok"><span class="pdot"></span>Connected</span>
-    <span class="tb-sep"></span>
-    <span class="tb-clock" id="tbClock">--:--</span>
-    <span class="tb-sep"></span>
-    <button class="tb-gear" title="Settings" onclick="openSettings()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+    <a href="/" class="sidebar-icon {{ 'active' if active=='plan' else '' }}" title="Planning">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+    </a>
+    <a href="#" class="sidebar-icon" title="Search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="M21 21l-4.35-4.35"/>
+      </svg>
+    </a>
+    <a href="#" class="sidebar-icon" title="Messages">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </a>
+    <a href="/dashboard" class="sidebar-icon {{ 'active' if active=='live' else '' }}" title="Live telemetry">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    </a>
+    <a href="/history" class="sidebar-icon {{ 'active' if active=='log' else '' }}" title="Flight log">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10 9 9 9 8 9"/>
+      </svg>
+    </a>
+    <a href="#" class="sidebar-icon" title="Users">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </a>
+    <a href="#" class="sidebar-icon" title="Documents">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+        <polyline points="13 2 13 9 20 9"/>
+      </svg>
+    </a>
+    <a href="#" class="sidebar-icon" title="Analytics">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <line x1="18" y1="20" x2="18" y2="10"/>
+        <line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+    </a>
+    <a href="#" class="sidebar-icon" title="Settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg>
-    </button>
+    </a>
+    <div class="sidebar-spacer"></div>
+    <a href="#" class="sidebar-icon" title="Notifications">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </a>
+    <div class="sidebar-avatar"></div>
+  </nav>
+
+  <div class="main-content">
+    <header class="header">
+      <h1 class="header-title">Planning for {% block header_date %}{{ today }}{% endblock %}</h1>
+      <div class="header-actions">
+        <button class="btn-new" onclick="document.getElementById('address')?.focus()">New planning</button>
+        <a id="downloadLink" href="#" class="btn-export">
+          Export
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <div class="content-area">
+      {% block content %}{% endblock %}
+    </div>
   </div>
 </div>
 
@@ -105,26 +131,15 @@
     </label>
     <p class="settings-note">Stored in your browser. On the planning page this overrides the default home base and drone range.</p>
     <div class="settings-actions">
-      <button class="btn-secondary" onclick="resetSettings()">Reset</button>
-      <button class="btn-primary-grad" onclick="saveSettings()">Save</button>
+      <button class="btn-cancel" onclick="resetSettings()">Reset</button>
+      <button class="btn-save" onclick="saveSettings()">Save</button>
     </div>
   </div>
 </div>
 
-{% block content %}{% endblock %}
-
 <div id="toastStack" class="toast-stack"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-  (function () {
-    var el = document.getElementById('tbClock');
-    if (!el) return;
-    function tick() { el.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
-    tick();
-    setInterval(tick, 10000);
-  })();
-</script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>
