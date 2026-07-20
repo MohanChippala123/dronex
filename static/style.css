@@ -499,15 +499,8 @@ tr.chosen td:first-child { border-left: 2px solid var(--accent); }
 
 .map-grid {
   position: absolute; inset: 0; z-index: 401; pointer-events: none;
-  background-image:
-    linear-gradient(rgba(0,229,200,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,229,200,0.03) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: radial-gradient(circle at center, rgba(0,0,0,0.9), transparent 78%);
-  -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,0.9), transparent 78%);
   opacity: 0; transition: opacity .3s ease;
 }
-.map-col:not(.has-mission) .map-grid { opacity: 1; }
 .map-col::after {
   content: ''; position: absolute; inset: 0; z-index: 400; pointer-events: none;
   box-shadow: inset 0 0 100px rgba(0,0,0,0.4);
