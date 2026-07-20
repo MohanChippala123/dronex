@@ -513,6 +513,13 @@ tr.chosen td:first-child { border-left: 2px solid var(--accent); }
   z-index: 10;
 }
 
+/* plan page matches the flat preview: no icon rail, full-width shell */
+.plan-page .sidebar { display: none; }
+.plan-page .topbar-global { left: 16px; }
+.plan-page .plan-shell { left: 16px; }
+.plan-page .new-mission-btn { display: none; }
+.plan-page .list-col { width: 200px; }
+
 .btn-secondary {
   background: var(--panel-solid); border: 1px solid var(--line); color: var(--text);
   border-radius: 10px; padding: 9px 16px; font-weight: 600; font-size: 13px; cursor: pointer;
