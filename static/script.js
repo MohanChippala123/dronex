@@ -1,4 +1,4 @@
-/* DroneX — delivery/logistics dashboard. Purple accent. */
+/* DroneX — Dispatch dashboard. Light theme, green accent. */
 
 let planMap, miniMap;
 let homeMarker, candidateMarkers = [], routeLine, droneMarker;
@@ -58,7 +58,7 @@ function resetSettings() {
 // ---------------- helpers ----------------
 
 function aqiColor(aqi) {
-  if (aqi === null || aqi === undefined) return '#6B7280';
+  if (aqi === null || aqi === undefined) return '#9CA3AF';
   if (aqi <= 50) return '#10B981';
   if (aqi <= 100) return '#F59E0B';
   if (aqi <= 150) return '#F97316';
@@ -88,7 +88,7 @@ function toast(msg, type = 'info', timeout = 6000) {
 }
 
 function aqiCategoryInfo(aqi) {
-  if (aqi === null || aqi === undefined) return { label: 'Unknown', color: '#6B7280', statusClass: 'awaiting' };
+  if (aqi === null || aqi === undefined) return { label: 'Unknown', color: '#9CA3AF', statusClass: 'awaiting' };
   if (aqi <= 50) return { label: 'Good', color: '#10B981', statusClass: 'delivered' };
   if (aqi <= 100) return { label: 'Moderate', color: '#F59E0B', statusClass: 'awaiting' };
   if (aqi <= 150) return { label: 'USG', color: '#F97316', statusClass: 'awaiting' };
@@ -168,8 +168,8 @@ function renderList() {
     card.innerHTML = `
       <div class="card-header">
         <span class="card-id">#${entry.mission_id}</span>
-        <span class="status-badge ${status.statusClass}">
-          <span class="badge-dot"></span>
+        <span class="status-pill ${status.statusClass}">
+          <span class="pill-dot"></span>
           ${status.label}
         </span>
       </div>
@@ -191,16 +191,16 @@ function initPlanMap() {
   planMap = L.map('planMap', { zoomControl: true }).setView([droneHome.lat, droneHome.lon], 12);
   planMap.createPane('labelPane');
   planMap.getPane('labelPane').style.zIndex = 350;
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
     subdomains: 'abcd',
     maxZoom: 20,
   }).addTo(planMap);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
     subdomains: 'abcd', maxZoom: 20, pane: 'labelPane',
   }).addTo(planMap);
   homeMarker = L.marker([droneHome.lat, droneHome.lon], {
-    icon: divIcon('<div class="home-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>', 32),
+    icon: divIcon('<div class="home-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>', 40),
   }).addTo(planMap).bindPopup('Home base');
   drawRangeRing();
   drawNoFlyZones();
@@ -242,10 +242,10 @@ function drawFlightHistory() {
     if (m.mission_id === selectedMissionId) return;
     if (!m.target || m.target.lat == null) return;
     L.polyline([[droneHome.lat, droneHome.lon], [m.target.lat, m.target.lon]], {
-      color: 'rgba(139, 92, 246, 0.2)', weight: 1, dashArray: '1 6', interactive: false,
+      color: 'rgba(16, 185, 129, 0.3)', weight: 2, dashArray: '1 6', interactive: false,
     }).addTo(historyLayer);
     L.circleMarker([m.target.lat, m.target.lon], {
-      radius: 3, color: 'rgba(139, 92, 246, 0.4)', weight: 1, fillOpacity: 0.3, interactive: false,
+      radius: 4, color: '#10B981', weight: 2, fillOpacity: 0.3, interactive: false,
     }).addTo(historyLayer);
   });
 }
@@ -256,7 +256,7 @@ function onMapHover(e) {
   const { lat, lng } = e.latlng;
   if (!hoverPreview) {
     hoverPreview = L.marker([lat, lng], {
-      icon: divIcon('<div style="width:12px;height:12px;border-radius:50%;background:#8B5CF6;border:2px solid white;opacity:0.8;"></div>', 16),
+      icon: divIcon('<div style="width:12px;height:12px;border-radius:50%;background:#10B981;border:2px solid white;opacity:0.8;"></div>', 16),
       interactive: false, keyboard: false,
     }).addTo(planMap);
   } else {
@@ -272,7 +272,7 @@ function onMapClick(e) {
   const { lat, lng } = e.latlng;
   if (dropMarker) planMap.removeLayer(dropMarker);
   dropMarker = L.marker([lat, lng], {
-    icon: divIcon('<div style="width:20px;height:20px;border-radius:50%;background:#8B5CF6;border:3px solid white;box-shadow:0 2px 8px rgba(139,92,246,0.5);"></div>', 24),
+    icon: divIcon('<div style="width:20px;height:20px;border-radius:50%;background:#10B981;border:3px solid white;box-shadow:0 2px 8px rgba(16,185,129,0.5);"></div>', 24),
     zIndexOffset: 1000,
   }).addTo(planMap);
   markInteracted();
@@ -504,7 +504,7 @@ function plotMissionOnMap(entry, rich) {
       const html = isChosen
         ? '<div class="package-marker chosen"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>'
         : '<div class="package-marker"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>';
-      const marker = L.marker([c.lat, c.lon], { icon: divIcon(html, 28) })
+      const marker = L.marker([c.lat, c.lon], { icon: divIcon(html, 32) })
         .addTo(planMap)
         .bindPopup(`AQI ${c.worst_aqi} (${c.worst_param})<br>${c.distance_miles} mi from address`);
       candidateMarkers.push(marker);
@@ -512,7 +512,7 @@ function plotMissionOnMap(entry, rich) {
   }
 
   routeLine = L.polyline([[droneHome.lat, droneHome.lon], [targetLat, targetLon]], {
-    color: '#8B5CF6', weight: 2, opacity: 0.8, dashArray: '4 8',
+    color: '#10B981', weight: 3, opacity: 0.9, dashArray: '4 8',
   }).addTo(planMap);
 
   const bounds = L.latLngBounds([[droneHome.lat, droneHome.lon], [targetLat, targetLon]]);
@@ -537,12 +537,12 @@ function drawRangeRing() {
   const meters = (miles / 2) * 1609.34;
   rangeRing = L.circle([droneHome.lat, droneHome.lon], {
     radius: meters,
-    color: 'rgba(139, 92, 246, 0.2)', weight: 1, fillColor: 'transparent',
+    color: 'rgba(16, 185, 129, 0.2)', weight: 1, fillColor: 'transparent',
     dashArray: '4 8', interactive: false,
   }).addTo(planMap);
   L.circle([droneHome.lat, droneHome.lon], {
     radius: meters,
-    color: 'rgba(139, 92, 246, 0.35)', weight: 1, fillColor: 'transparent',
+    color: 'rgba(16, 185, 129, 0.35)', weight: 1, fillColor: 'transparent',
     interactive: false,
   }).addTo(planMap);
 }
@@ -553,7 +553,7 @@ function placeDroneMarker() {
   if (droneMarker) { planMap.removeLayer(droneMarker); droneMarker = null; }
   if (t && t.lat && t.lon && t.mission_id === selectedMissionId) {
     droneMarker = L.marker([t.lat, t.lon], {
-      icon: divIcon('<div style="width:28px;height:28px;border-radius:50%;background:#8B5CF6;border:3px solid white;display:flex;align-items:center;justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg></div>', 32),
+      icon: divIcon('<div style="width:32px;height:32px;border-radius:50%;background:#10B981;border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(16,185,129,0.4);"><svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg></div>', 36),
     }).addTo(planMap).bindPopup('Live position');
   }
 }
@@ -605,7 +605,7 @@ function renderDetail(entry, rich) {
   const status = statusFor(entry);
   document.getElementById('d-id').textContent = entry.mission_id;
   const statusBadge = document.getElementById('d-status');
-  statusBadge.className = 'status-badge ' + status.statusClass;
+  statusBadge.className = 'status-pill ' + status.statusClass;
   document.getElementById('d-status-label').textContent = status.label;
 
   document.getElementById('d-address').textContent = (entry.address_resolved || entry.address || '--').slice(0, 60);
@@ -614,7 +614,7 @@ function renderDetail(entry, rich) {
   const aqiVal = entry.aqi_before !== null && entry.aqi_before !== undefined ? entry.aqi_before : null;
   const cat = aqiCategoryInfo(aqiVal);
   document.getElementById('d-aqi').innerHTML = aqiVal !== null
-    ? `<span style="color:${cat.color};font-weight:600">${aqiVal}</span> <span class="status-badge ${status.statusClass}"><span class="badge-dot"></span>${cat.label}</span>`
+    ? `<span style="color:${cat.color};font-weight:600">${aqiVal}</span> <span class="status-pill ${status.statusClass}"><span class="pill-dot"></span>${cat.label}</span>`
     : '--';
 
   renderCandidateBars(rich);
@@ -644,8 +644,8 @@ function renderDetail(entry, rich) {
 function renderMiniMap(lat, lon) {
   if (miniMap) { miniMap.remove(); miniMap = null; }
   miniMap = L.map('miniMap', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false }).setView([lat, lon], 14);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20 }).addTo(miniMap);
-  L.marker([lat, lon], { icon: divIcon('<div style="width:12px;height:12px;border-radius:50%;background:#8B5CF6;border:2px solid white;"></div>', 16) }).addTo(miniMap);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20 }).addTo(miniMap);
+  L.marker([lat, lon], { icon: divIcon('<div style="width:12px;height:12px;border-radius:50%;background:#10B981;border:2px solid white;"></div>', 16) }).addTo(miniMap);
 }
 
 function renderCandidateBars(rich) {
